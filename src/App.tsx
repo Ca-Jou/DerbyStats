@@ -5,9 +5,11 @@ import Navbar from './components/Navbar'
 import Login from './pages/Login'
 import Home from './pages/Home'
 import Teams from './pages/Teams'
+import TeamDetails from './pages/TeamDetails'
 import Skaters from './pages/Skaters'
 import SkaterDetails from './pages/SkaterDetails'
 import Games from './pages/Games'
+import GameDetails from './pages/GameDetails'
 import './assets/css/App.css'
 
 function App() {
@@ -28,10 +30,26 @@ function App() {
                 }
               />
               <Route
+                path="/games/:id"
+                element={
+                  <ProtectedRoute>
+                    <GameDetails />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/games"
                 element={
                   <ProtectedRoute>
                     <Games />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teams/:id"
+                element={
+                  <ProtectedRoute>
+                    <TeamDetails />
                   </ProtectedRoute>
                 }
               />
