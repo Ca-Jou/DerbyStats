@@ -57,7 +57,7 @@ function DeleteButton({
   }
 
   const sizeClass = size ? `btn-${size}` : ''
-  const buttonClasses = `btn btn-danger ${sizeClass} ${className}`.trim()
+  const buttonClasses = `btn btn-outline-danger ${sizeClass} ${className}`.trim()
 
   return (
     <>
@@ -90,7 +90,7 @@ function DeleteButton({
                 <div className="modal-footer">
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-outline-secondary"
                     onClick={() => setShowModal(false)}
                     disabled={isLoading}
                   >
@@ -98,7 +98,7 @@ function DeleteButton({
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger"
+                    className="btn btn-outline-danger"
                     onClick={handleDelete}
                     disabled={isLoading}
                   >

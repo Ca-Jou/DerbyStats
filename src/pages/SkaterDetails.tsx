@@ -107,11 +107,11 @@ function SkaterDetails() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h1 className="mb-0">Skater Details</h1>
             <div>
-              <button className="btn btn-secondary me-2" onClick={() => navigate('/skaters')}>
+              <button className="btn btn-outline-secondary me-2" onClick={() => navigate('/skaters')}>
                 <i className="bi bi-arrow-left me-2"></i>
                 Back
               </button>
-              <button className="btn btn-primary me-2" onClick={() => setShowEditModal(true)}>
+              <button className="btn btn-outline-primary me-2" onClick={() => setShowEditModal(true)}>
                 <i className="bi bi-pencil-fill me-2"></i>
                 Edit
               </button>

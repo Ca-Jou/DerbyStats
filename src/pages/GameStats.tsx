@@ -71,7 +71,7 @@ function GameStats() {
         <div className="alert alert-danger" role="alert">
           Error: {error}
         </div>
-        <button className="btn btn-secondary" onClick={() => navigate(`/games/${id}`)}>
+        <button className="btn btn-outline-secondary" onClick={() => navigate(`/games/${id}`)}>
           Back to Game Details
         </button>
       </div>
@@ -84,7 +84,7 @@ function GameStats() {
         <div className="alert alert-warning" role="alert">
           Game not found
         </div>
-        <button className="btn btn-secondary" onClick={() => navigate('/games')}>
+        <button className="btn btn-outline-secondary" onClick={() => navigate('/games')}>
           Back to Games
         </button>
       </div>
@@ -97,7 +97,7 @@ function GameStats() {
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h1 className="mb-0">Game Statistics</h1>
-            <button className="btn btn-secondary" onClick={() => navigate(`/games/${game.id}`)}>
+            <button className="btn btn-outline-secondary" onClick={() => navigate(`/games/${game.id}`)}>
               <i className="bi bi-arrow-left me-2"></i>
               Back to Game Details
             </button>

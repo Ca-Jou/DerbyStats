@@ -69,7 +69,7 @@ function Skaters() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h1 className="mb-0">Skaters</h1>
             <button
-              className="btn btn-primary"
+              className="btn btn-outline-primary"
               onClick={() => setShowModal(true)}
             >
               <i className="bi bi-plus-circle me-2"></i>

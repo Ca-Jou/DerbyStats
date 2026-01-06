@@ -68,7 +68,7 @@ function Navbar() {
           </div>
         ) : (
           <div className="p-3 border-top">
-            <Link to="/login" className="btn btn-primary btn-sm w-100">
+            <Link to="/login" className="btn btn-outline-secondary btn-sm w-100">
               Login
             </Link>
           </div>
@@ -89,7 +89,7 @@ function Navbar() {
               Logout
             </button>
           ) : (
-            <Link to="/login" className="btn btn-primary btn-sm">
+            <Link to="/login" className="btn btn-outline-secondary btn-sm">
               Login
             </Link>
           )}

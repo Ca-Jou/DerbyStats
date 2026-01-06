@@ -267,7 +267,7 @@ function EditRosterForm({ show, roster, teamId, teamName, onClose, onSuccess, on
               <div className="modal-footer">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-outline-secondary"
                   onClick={handleClose}
                   disabled={submitting}
                 >
@@ -275,7 +275,7 @@ function EditRosterForm({ show, roster, teamId, teamName, onClose, onSuccess, on
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="btn btn-outline-primary"
                   disabled={submitting || loadingSkaters}
                 >
                   {submitting ? (

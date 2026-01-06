@@ -209,7 +209,7 @@ function TeamDetails() {
         <div className="alert alert-danger" role="alert">
           Error: {error}
         </div>
-        <button className="btn btn-secondary" onClick={() => navigate('/teams')}>
+        <button className="btn btn-outline-secondary" onClick={() => navigate('/teams')}>
           Back to Teams
         </button>
       </div>
@@ -222,7 +222,7 @@ function TeamDetails() {
         <div className="alert alert-warning" role="alert">
           Team not found
         </div>
-        <button className="btn btn-secondary" onClick={() => navigate('/teams')}>
+        <button className="btn btn-outline-secondary" onClick={() => navigate('/teams')}>
           Back to Teams
         </button>
       </div>
@@ -236,11 +236,11 @@ function TeamDetails() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h1 className="mb-0">Team Details</h1>
             <div>
-              <button className="btn btn-secondary me-2" onClick={() => navigate('/teams')}>
+              <button className="btn btn-outline-secondary me-2" onClick={() => navigate('/teams')}>
                 <i className="bi bi-arrow-left me-2"></i>
                 Back
               </button>
-              <button className="btn btn-primary me-2" onClick={() => setShowEditModal(true)}>
+              <button className="btn btn-outline-primary me-2" onClick={() => setShowEditModal(true)}>
                 <i className="bi bi-pencil-fill me-2"></i>
                 Edit
               </button>
@@ -332,7 +332,7 @@ function TeamDetails() {
                           <div style={{ minWidth: '60px' }}><strong>#{skater.number}</strong></div>
                           <div className="flex-grow-1">{skater.name}</div>
                           <button
-                            className="btn btn-danger btn-sm"
+                            className="btn btn-outline-danger btn-sm"
                             onClick={() => {
                               setSkaterToRemove(skater.id)
                               setShowRemoveModal(true)
@@ -347,7 +347,7 @@ function TeamDetails() {
                     <p className="text-muted mb-2">No skaters on this team yet.</p>
                   )}
                   <button
-                    className="btn btn-success btn-sm mt-2"
+                    className="btn btn-outline-primary btn-sm mt-2"
                     onClick={handleOpenAddModal}
                   >
                     <i className="bi bi-plus-circle me-2"></i>
@@ -422,7 +422,7 @@ function TeamDetails() {
                 <div className="modal-footer">
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-outline-secondary"
                     onClick={() => {
                       setShowAddSkaterModal(false)
                       setSelectedSkaters([])
@@ -433,7 +433,7 @@ function TeamDetails() {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-success"
+                    className="btn btn-outline-primary"
                     onClick={handleAddSkaters}
                     disabled={adding || selectedSkaters.length === 0}
                   >
@@ -477,7 +477,7 @@ function TeamDetails() {
                 <div className="modal-footer">
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-outline-secondary"
                     onClick={() => {
                       setShowRemoveModal(false)
                       setSkaterToRemove(null)
@@ -488,7 +488,7 @@ function TeamDetails() {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger"
+                    className="btn btn-outline-danger"
                     onClick={handleRemoveSkater}
                     disabled={removing}
                   >

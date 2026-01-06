@@ -165,7 +165,7 @@ function GameDetails() {
         <div className="alert alert-danger" role="alert">
           Error: {error}
         </div>
-        <button className="btn btn-secondary" onClick={() => navigate('/games')}>
+        <button className="btn btn-outline-secondary" onClick={() => navigate('/games')}>
           Back to Games
         </button>
       </div>
@@ -178,7 +178,7 @@ function GameDetails() {
         <div className="alert alert-warning" role="alert">
           Game not found
         </div>
-        <button className="btn btn-secondary" onClick={() => navigate('/games')}>
+        <button className="btn btn-outline-secondary" onClick={() => navigate('/games')}>
           Back to Games
         </button>
       </div>
@@ -194,24 +194,24 @@ function GameDetails() {
               <h1 className="mb-0">Game Details</h1>
               {hasJams && (
                 <button
-                  className="btn btn-info"
+                  className="btn btn-primary"
                   onClick={() => navigate(`/games/${game.id}/stats`)}
                 >
                   <i className="bi bi-speedometer2 me-2"></i>
-                  View Statistics
+                  View Stats
                 </button>
               )}
             </div>
             <div>
-              <button className="btn btn-secondary me-2" onClick={() => navigate('/games')}>
+              <button className="btn btn-outline-secondary me-2" onClick={() => navigate('/games')}>
                 <i className="bi bi-arrow-left me-2"></i>
                 Back
               </button>
-              <button className="btn btn-success me-2" onClick={() => navigate(`/games/${game.id}/enter-stats`)}>
+              <button className="btn btn-outline-primary me-2" onClick={() => navigate(`/games/${game.id}/enter-stats`)}>
                 <i className="bi bi-clipboard-data me-2"></i>
                 Enter Stats
               </button>
-              <button className="btn btn-primary me-2" onClick={() => setShowEditModal(true)}>
+              <button className="btn btn-outline-primary me-2" onClick={() => setShowEditModal(true)}>
                 <i className="bi bi-pencil-fill me-2"></i>
                 Edit
               </button>
@@ -277,7 +277,7 @@ function GameDetails() {
                   {!homeRoster ? (
                     <div className="text-center">
                       <button
-                        className="btn btn-success"
+                        className="btn btn-outline-primary"
                         onClick={() => setShowCreateHomeRoster(true)}
                       >
                         <i className="bi bi-plus-circle me-2"></i>
@@ -314,14 +314,14 @@ function GameDetails() {
 
                       <div className="d-flex justify-content-center gap-2 mt-3">
                         <button
-                          className="btn btn-primary btn-sm"
+                          className="btn btn-outline-primary btn-sm"
                           onClick={() => setShowEditHomeRoster(true)}
                         >
                           <i className="bi bi-pencil-fill me-1"></i>
                           Edit
                         </button>
                         <button
-                          className="btn btn-danger btn-sm"
+                          className="btn btn-outline-danger btn-sm"
                           onClick={() => {
                             setRosterToDelete({
                               id: homeRoster.id,
@@ -368,7 +368,7 @@ function GameDetails() {
                   {!visitingRoster ? (
                     <div className="text-center">
                       <button
-                        className="btn btn-success"
+                        className="btn btn-outline-primary"
                         onClick={() => setShowCreateVisitingRoster(true)}
                       >
                         <i className="bi bi-plus-circle me-2"></i>
@@ -405,14 +405,14 @@ function GameDetails() {
 
                       <div className="d-flex justify-content-center gap-2 mt-3">
                         <button
-                          className="btn btn-primary btn-sm"
+                          className="btn btn-outline-primary btn-sm"
                           onClick={() => setShowEditVisitingRoster(true)}
                         >
                           <i className="bi bi-pencil-fill me-1"></i>
                           Edit
                         </button>
                         <button
-                          className="btn btn-danger btn-sm"
+                          className="btn btn-outline-danger btn-sm"
                           onClick={() => {
                             setRosterToDelete({
                               id: visitingRoster.id,
@@ -470,7 +470,7 @@ function GameDetails() {
                 <div className="modal-footer">
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-outline-secondary"
                     onClick={() => {
                       setShowDeleteRosterConfirm(false)
                       setRosterToDelete(null)
@@ -480,7 +480,7 @@ function GameDetails() {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger"
+                    className="btn btn-outline-danger"
                     onClick={async () => {
                       try {
                         const { error } = await supabase

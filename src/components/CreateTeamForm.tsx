@@ -151,7 +151,7 @@ function CreateTeamForm({ show, onClose, onSuccess, onError }: CreateTeamFormPro
               <div className="modal-footer">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-outline-secondary"
                   onClick={handleClose}
                   disabled={submitting}
                 >
@@ -159,7 +159,7 @@ function CreateTeamForm({ show, onClose, onSuccess, onError }: CreateTeamFormPro
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="btn btn-outline-primary"
                   disabled={submitting}
                 >
                   {submitting ? (
