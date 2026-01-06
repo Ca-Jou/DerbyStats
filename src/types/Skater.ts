@@ -26,3 +26,24 @@ export interface Game {
   home_team?: Team
   visiting_team?: Team
 }
+
+export interface RosterJammer {
+  id: string
+  game_roster_id: string
+  skater_id: string
+  skater?: Skater
+}
+
+export interface RosterLine {
+  id: string
+  game_roster_id: string
+  name: string
+}
+
+export interface GameRoster {
+  id: string
+  game_id: string
+  team_id: string
+  roster_jammers?: RosterJammer[]
+  roster_lines?: RosterLine[]
+}
