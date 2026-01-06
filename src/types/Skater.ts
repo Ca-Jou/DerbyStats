@@ -1,8 +1,15 @@
-export interface Skater {
-  id: number
+export interface Team {
+  id: string
   name: string
-  position: string
-  jersey_number: number
-  team_id?: number
-  created_at?: string
+  city: string
+  country: string
+  light_color?: string
+  dark_color?: string
+}
+
+export interface Skater {
+  id: string
+  number: string
+  name: string
+  teams?: Team[]
 }

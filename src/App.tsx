@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Home from './pages/Home'
 import Teams from './pages/Teams'
 import Skaters from './pages/Skaters'
+import SkaterDetails from './pages/SkaterDetails'
 import Games from './pages/Games'
 import './assets/css/App.css'
 
@@ -39,6 +40,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Teams />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/skaters/:id"
+                element={
+                  <ProtectedRoute>
+                    <SkaterDetails />
                   </ProtectedRoute>
                 }
               />
