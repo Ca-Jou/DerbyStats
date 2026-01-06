@@ -10,6 +10,8 @@ import Skaters from './pages/Skaters'
 import SkaterDetails from './pages/SkaterDetails'
 import Games from './pages/Games'
 import GameDetails from './pages/GameDetails'
+import GameStats from './pages/GameStats'
+import EnterGameStats from './pages/EnterGameStats'
 import './assets/css/App.css'
 
 function App() {
@@ -26,6 +28,22 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/games/:id/stats"
+                element={
+                  <ProtectedRoute>
+                    <GameStats />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/games/:id/enter-stats"
+                element={
+                  <ProtectedRoute>
+                    <EnterGameStats />
                   </ProtectedRoute>
                 }
               />

@@ -47,3 +47,21 @@ export interface GameRoster {
   roster_jammers?: RosterJammer[]
   roster_lines?: RosterLine[]
 }
+
+export interface Jam {
+  id: string
+  game_id: string
+  period: number
+  jam_number: number
+  home_jammer_id: string | null
+  home_line_id: string | null
+  home_points: number
+  visiting_jammer_id: string | null
+  visiting_line_id: string | null
+  visiting_points: number
+  lead_team: 'home' | 'visiting' | null
+  home_jammer?: Skater
+  home_line?: RosterLine
+  visiting_jammer?: Skater
+  visiting_line?: RosterLine
+}

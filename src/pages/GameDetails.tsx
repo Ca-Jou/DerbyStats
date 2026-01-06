@@ -13,6 +13,7 @@ function GameDetails() {
   const [game, setGame] = useState<Game | null>(null)
   const [homeRoster, setHomeRoster] = useState<GameRoster | null>(null)
   const [visitingRoster, setVisitingRoster] = useState<GameRoster | null>(null)
+  const [hasJams, setHasJams] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -69,6 +70,23 @@ function GameDetails() {
     }
   }
 
+  const checkJamsExist = async (gameId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('jams')
+        .select('id')
+        .eq('game_id', gameId)
+        .limit(1)
+
+      if (error) throw error
+
+      setHasJams(data && data.length > 0)
+    } catch (error) {
+      console.error('Error checking jams:', error)
+      setHasJams(false)
+    }
+  }
+
   useEffect(() => {
     async function fetchGame() {
       try {
@@ -101,8 +119,9 @@ function GameDetails() {
 
         setGame(mappedGame)
 
-        // Fetch rosters after game is loaded
+        // Fetch rosters and check for jams after game is loaded
         await fetchRosters(mappedGame.id, mappedGame.home_team_id, mappedGame.visiting_team_id)
+        await checkJamsExist(mappedGame.id)
       } catch (error) {
         setError(error instanceof Error ? error.message : 'An error occurred')
       } finally {
@@ -171,11 +190,26 @@ function GameDetails() {
       <div className="row">
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="mb-0">Game Details</h1>
+            <div className="d-flex align-items-center gap-3">
+              <h1 className="mb-0">Game Details</h1>
+              {hasJams && (
+                <button
+                  className="btn btn-info"
+                  onClick={() => navigate(`/games/${game.id}/stats`)}
+                >
+                  <i className="bi bi-speedometer2 me-2"></i>
+                  View Statistics
+                </button>
+              )}
+            </div>
             <div>
               <button className="btn btn-secondary me-2" onClick={() => navigate('/games')}>
                 <i className="bi bi-arrow-left me-2"></i>
                 Back
+              </button>
+              <button className="btn btn-success me-2" onClick={() => navigate(`/games/${game.id}/enter-stats`)}>
+                <i className="bi bi-clipboard-data me-2"></i>
+                Enter Stats
               </button>
               <button className="btn btn-primary me-2" onClick={() => setShowEditModal(true)}>
                 <i className="bi bi-pencil-fill me-2"></i>
