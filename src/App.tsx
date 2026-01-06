@@ -6,6 +6,8 @@ import Login from './pages/Login'
 import Home from './pages/Home'
 import Teams from './pages/Teams'
 import Skaters from './pages/Skaters'
+import Games from './pages/Games'
+import './assets/css/App.css'
 
 function App() {
   return (
@@ -13,7 +15,7 @@ function App() {
       <AuthProvider>
         <div className="App">
           <Navbar />
-          <main>
+          <main className="main-content">
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route
@@ -21,6 +23,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/games"
+                element={
+                  <ProtectedRoute>
+                    <Games />
                   </ProtectedRoute>
                 }
               />

@@ -1,0 +1,19 @@
+/* Main content area styles */
+.main-content {
+  /* On large screens, add left margin for sidebar */
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 992px) {
+  .main-content {
+    margin-left: 250px;
+  }
+}
+
+/* On small screens, add top padding for navbar */
+@media (max-width: 991.98px) {
+  .main-content {
+    padding-top: 56px; /* Height of mobile navbar */
+  }
+}

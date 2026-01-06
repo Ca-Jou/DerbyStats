@@ -1,0 +1,65 @@
+/* Sidebar styles for large screens */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 250px;
+  z-index: 1000;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar .nav-link {
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 0.25rem;
+  color: #495057;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar .nav-link:hover {
+  background-color: #e9ecef;
+  color: #212529;
+}
+
+.sidebar .nav-link.active {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.sidebar .nav-link i {
+  font-size: 1.25rem;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+}
+
+/* Mobile navbar styles */
+@media (max-width: 991.98px) {
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .navbar .nav-link {
+    padding: 0.5rem 1rem;
+    color: #495057;
+  }
+
+  .navbar .nav-link:hover {
+    color: #0d6efd;
+  }
+
+  .navbar .nav-link.active {
+    color: #0d6efd;
+  }
+
+  .navbar .nav-link i {
+    font-size: 1.5rem;
+  }
+}
