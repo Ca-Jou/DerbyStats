@@ -25,6 +25,10 @@ function TeamDetails() {
   const [availableSkaters, setAvailableSkaters] = useState<SkaterOption[]>([])
   const [selectedSkaters, setSelectedSkaters] = useState<string[]>([])
   const [adding, setAdding] = useState(false)
+  const [showCreateSkater, setShowCreateSkater] = useState(false)
+  const [newSkaterNumber, setNewSkaterNumber] = useState('')
+  const [newSkaterName, setNewSkaterName] = useState('')
+  const [creating, setCreating] = useState(false)
 
   const handleOpenAddModal = async () => {
     try {
@@ -128,6 +132,36 @@ function TeamDetails() {
         ? prev.filter(id => id !== skaterId)
         : [...prev, skaterId]
     )
+  }
+
+  const handleCreateSkater = async () => {
+    if (!newSkaterNumber.trim() || !newSkaterName.trim()) return
+
+    setCreating(true)
+
+    try {
+      const { data: newSkater, error: createError } = await supabase
+        .from('skaters')
+        .insert({
+          number: newSkaterNumber.trim(),
+          name: newSkaterName.trim()
+        })
+        .select('id, number, name')
+        .single()
+
+      if (createError) throw createError
+
+      setAvailableSkaters(prev => [...prev, newSkater])
+      setSelectedSkaters(prev => [...prev, newSkater.id])
+
+      setNewSkaterNumber('')
+      setNewSkaterName('')
+      setShowCreateSkater(false)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred')
+    } finally {
+      setCreating(false)
+    }
   }
 
   useEffect(() => {
@@ -386,67 +420,144 @@ function TeamDetails() {
                     onClick={() => {
                       setShowAddSkaterModal(false)
                       setSelectedSkaters([])
+                      setShowCreateSkater(false)
+                      setNewSkaterNumber('')
+                      setNewSkaterName('')
                     }}
-                    disabled={adding}
+                    disabled={adding || creating}
                   ></button>
                 </div>
                 <div className="modal-body">
-                  {availableSkaters.length > 0 ? (
-                    <div>
-                      <p className="mb-3">Select skaters to add to the team:</p>
-                      <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                        {availableSkaters.map((skater) => (
-                          <div key={skater.id} className="form-check mb-2">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`skater-${skater.id}`}
-                              checked={selectedSkaters.includes(skater.id)}
-                              onChange={() => toggleSkaterSelection(skater.id)}
-                              disabled={adding}
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor={`skater-${skater.id}`}
-                            >
-                              #{skater.number} - {skater.name}
-                            </label>
+                  {!showCreateSkater ? (
+                    <>
+                      {availableSkaters.length > 0 && (
+                        <div className="mb-3">
+                          <p className="mb-3">Select skaters to add to the team:</p>
+                          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            {availableSkaters.map((skater) => (
+                              <div key={skater.id} className="form-check mb-2">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id={`skater-${skater.id}`}
+                                  checked={selectedSkaters.includes(skater.id)}
+                                  onChange={() => toggleSkaterSelection(skater.id)}
+                                  disabled={adding || creating}
+                                />
+                                <label
+                                  className="form-check-label"
+                                  htmlFor={`skater-${skater.id}`}
+                                >
+                                  #{skater.number} - {skater.name}
+                                </label>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        className="btn btn-outline-success btn-sm"
+                        onClick={() => setShowCreateSkater(true)}
+                        disabled={adding || creating}
+                      >
+                        <i className="bi bi-plus-circle me-2"></i>
+                        Create New Skater
+                      </button>
+                    </>
+                  ) : (
+                    <div>
+                      <h6 className="mb-3">Create New Skater</h6>
+                      <div className="mb-3">
+                        <label className="form-label">Skater Number</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newSkaterNumber}
+                          onChange={(e) => setNewSkaterNumber(e.target.value)}
+                          disabled={creating}
+                          placeholder="e.g., 42"
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">Skater Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newSkaterName}
+                          onChange={(e) => setNewSkaterName(e.target.value)}
+                          disabled={creating}
+                          placeholder="e.g., Jane Doe"
+                        />
+                      </div>
+                      <div className="d-flex gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={() => {
+                            setShowCreateSkater(false)
+                            setNewSkaterNumber('')
+                            setNewSkaterName('')
+                          }}
+                          disabled={creating}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-success btn-sm"
+                          onClick={handleCreateSkater}
+                          disabled={creating || !newSkaterNumber.trim() || !newSkaterName.trim()}
+                        >
+                          {creating ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                              Creating...
+                            </>
+                          ) : (
+                            <>
+                              <i className="bi bi-check-circle me-2"></i>
+                              Create & Add to Team
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
-                  ) : (
-                    <p>All skaters are already on this team.</p>
                   )}
                 </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => {
-                      setShowAddSkaterModal(false)
-                      setSelectedSkaters([])
-                    }}
-                    disabled={adding}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary"
-                    onClick={handleAddSkaters}
-                    disabled={adding || selectedSkaters.length === 0}
-                  >
-                    {adding ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Adding...
-                      </>
-                    ) : (
-                      `Add ${selectedSkaters.length > 0 ? `(${selectedSkaters.length})` : ''}`
-                    )}
-                  </button>
-                </div>
+                {!showCreateSkater && (
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={() => {
+                        setShowAddSkaterModal(false)
+                        setSelectedSkaters([])
+                        setShowCreateSkater(false)
+                        setNewSkaterNumber('')
+                        setNewSkaterName('')
+                      }}
+                      disabled={adding || creating}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline-primary"
+                      onClick={handleAddSkaters}
+                      disabled={adding || creating || selectedSkaters.length === 0}
+                    >
+                      {adding ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          Adding...
+                        </>
+                      ) : (
+                        `Add ${selectedSkaters.length > 0 ? `(${selectedSkaters.length})` : ''}`
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

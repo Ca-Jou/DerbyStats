@@ -18,6 +18,10 @@ function CreateRosterForm({ show, gameId, teamId, teamName, onClose, onSuccess, 
   const [lineNames, setLineNames] = useState<string[]>([''])
   const [submitting, setSubmitting] = useState(false)
   const [loadingSkaters, setLoadingSkaters] = useState(false)
+  const [showCreateSkater, setShowCreateSkater] = useState(false)
+  const [newSkaterNumber, setNewSkaterNumber] = useState('')
+  const [newSkaterName, setNewSkaterName] = useState('')
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     if (show) {
@@ -70,6 +74,45 @@ function CreateRosterForm({ show, gameId, teamId, teamName, onClose, onSuccess, 
 
   const removeLine = (index: number) => {
     setLineNames(lineNames.filter((_, i) => i !== index))
+  }
+
+  const handleCreateSkater = async () => {
+    if (!newSkaterNumber.trim() || !newSkaterName.trim()) return
+
+    setCreating(true)
+
+    try {
+      const { data: newSkater, error: createError } = await supabase
+        .from('skaters')
+        .insert({
+          number: newSkaterNumber.trim(),
+          name: newSkaterName.trim()
+        })
+        .select('id, number, name')
+        .single()
+
+      if (createError) throw createError
+
+      const { error: linkError } = await supabase
+        .from('teams_skaters')
+        .insert({
+          team_id: teamId,
+          skater_id: newSkater.id
+        })
+
+      if (linkError) throw linkError
+
+      setTeamSkaters(prev => [...prev, newSkater])
+      setSelectedJammers(prev => [...prev, newSkater.id])
+
+      setNewSkaterNumber('')
+      setNewSkaterName('')
+      setShowCreateSkater(false)
+    } catch (error) {
+      onError(error instanceof Error ? error : new Error('Failed to create skater'))
+    } finally {
+      setCreating(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,9 +206,12 @@ function CreateRosterForm({ show, gameId, teamId, teamName, onClose, onSuccess, 
   }
 
   const handleClose = () => {
-    if (!submitting) {
+    if (!submitting && !creating) {
       setSelectedJammers([])
       setLineNames([''])
+      setShowCreateSkater(false)
+      setNewSkaterNumber('')
+      setNewSkaterName('')
       onClose()
     }
   }
@@ -183,7 +229,7 @@ function CreateRosterForm({ show, gameId, teamId, teamName, onClose, onSuccess, 
                 type="button"
                 className="btn-close"
                 onClick={handleClose}
-                disabled={submitting}
+                disabled={submitting || creating}
               ></button>
             </div>
             <form onSubmit={handleSubmit}>
@@ -197,26 +243,99 @@ function CreateRosterForm({ show, gameId, teamId, teamName, onClose, onSuccess, 
                         <span className="visually-hidden">Loading skaters...</span>
                       </div>
                     </div>
-                  ) : teamSkaters.length === 0 ? (
-                    <p className="text-muted">No skaters available for this team.</p>
                   ) : (
-                    <div style={{ maxHeight: '200px', overflowY: 'auto' }} className="border p-2 rounded">
-                      {teamSkaters.map((skater) => (
-                        <div key={skater.id} className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id={`jammer-${skater.id}`}
-                            checked={selectedJammers.includes(skater.id)}
-                            onChange={() => toggleJammer(skater.id)}
-                            disabled={submitting}
-                          />
-                          <label className="form-check-label" htmlFor={`jammer-${skater.id}`}>
-                            #{skater.number} - {skater.name}
-                          </label>
+                    <>
+                      {!showCreateSkater ? (
+                        <>
+                          {teamSkaters.length > 0 && (
+                            <div style={{ maxHeight: '200px', overflowY: 'auto' }} className="border p-2 rounded mb-2">
+                              {teamSkaters.map((skater) => (
+                                <div key={skater.id} className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id={`jammer-${skater.id}`}
+                                    checked={selectedJammers.includes(skater.id)}
+                                    onChange={() => toggleJammer(skater.id)}
+                                    disabled={submitting || creating}
+                                  />
+                                  <label className="form-check-label" htmlFor={`jammer-${skater.id}`}>
+                                    #{skater.number} - {skater.name}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            className="btn btn-outline-success btn-sm"
+                            onClick={() => setShowCreateSkater(true)}
+                            disabled={submitting || creating}
+                          >
+                            <i className="bi bi-plus-circle me-2"></i>
+                            Create New Skater
+                          </button>
+                        </>
+                      ) : (
+                        <div className="border p-3 rounded">
+                          <h6 className="mb-3">Create New Skater</h6>
+                          <div className="mb-3">
+                            <label className="form-label">Skater Number</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={newSkaterNumber}
+                              onChange={(e) => setNewSkaterNumber(e.target.value)}
+                              disabled={creating}
+                              placeholder="e.g., 42"
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label className="form-label">Skater Name</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={newSkaterName}
+                              onChange={(e) => setNewSkaterName(e.target.value)}
+                              disabled={creating}
+                              placeholder="e.g., Jane Doe"
+                            />
+                          </div>
+                          <div className="d-flex gap-2">
+                            <button
+                              type="button"
+                              className="btn btn-outline-secondary btn-sm"
+                              onClick={() => {
+                                setShowCreateSkater(false)
+                                setNewSkaterNumber('')
+                                setNewSkaterName('')
+                              }}
+                              disabled={creating}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-success btn-sm"
+                              onClick={handleCreateSkater}
+                              disabled={creating || !newSkaterNumber.trim() || !newSkaterName.trim()}
+                            >
+                              {creating ? (
+                                <>
+                                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                  Creating...
+                                </>
+                              ) : (
+                                <>
+                                  <i className="bi bi-check-circle me-2"></i>
+                                  Create & Add to Team
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -263,14 +382,14 @@ function CreateRosterForm({ show, gameId, teamId, teamName, onClose, onSuccess, 
                   type="button"
                   className="btn btn-outline-secondary"
                   onClick={handleClose}
-                  disabled={submitting}
+                  disabled={submitting || creating}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="btn btn-outline-primary"
-                  disabled={submitting || loadingSkaters}
+                  disabled={submitting || creating || loadingSkaters}
                 >
                   {submitting ? (
                     <>
