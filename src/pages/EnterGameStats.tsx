@@ -1,14 +1,36 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Game } from '../types/Skater'
+import { Game, Skater } from '../types/Skater'
+import JamEntryForm, { JamEntryFormRef } from '../components/JamEntryForm'
+
+export interface RosterJammerData {
+  id: string
+  skater_id: string
+  skater: Skater
+}
+
+export interface RosterLineData {
+  id: string
+  name: string
+}
 
 function EnterGameStats() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const jamFormRef = useRef<JamEntryFormRef>(null)
+
   const [game, setGame] = useState<Game | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const [period, setPeriod] = useState<1 | 2>(1)
+  const [jamNumber, setJamNumber] = useState(1)
+
+  const [homeJammers, setHomeJammers] = useState<RosterJammerData[]>([])
+  const [homeLines, setHomeLines] = useState<RosterLineData[]>([])
+  const [visitingJammers, setVisitingJammers] = useState<RosterJammerData[]>([])
+  const [visitingLines, setVisitingLines] = useState<RosterLineData[]>([])
 
   useEffect(() => {
     async function fetchGame() {
@@ -52,6 +74,101 @@ function EnterGameStats() {
       fetchGame()
     }
   }, [id])
+
+  useEffect(() => {
+    async function fetchRosters() {
+      if (!game) return
+
+      try {
+        const { data: rosters, error } = await supabase
+          .from('game_rosters')
+          .select(`
+            id,
+            team_id,
+            roster_jammers(
+              id,
+              skater_id,
+              skater:skaters(id, number, name)
+            ),
+            roster_lines(
+              id,
+              name
+            )
+          `)
+          .eq('game_id', game.id)
+
+        if (error) throw error
+
+        const homeRoster = rosters?.find((r) => r.team_id === game.home_team_id)
+        const visitingRoster = rosters?.find((r) => r.team_id === game.visiting_team_id)
+
+        const mapJammers = (jammers: unknown[] | undefined): RosterJammerData[] => {
+          if (!jammers) return []
+          return jammers.map((jammer: any) => ({
+            id: jammer.id,
+            skater_id: jammer.skater_id,
+            skater: Array.isArray(jammer.skater) ? jammer.skater[0] : jammer.skater
+          }))
+        }
+
+        setHomeJammers(mapJammers(homeRoster?.roster_jammers as unknown[]))
+        setHomeLines(homeRoster?.roster_lines || [])
+        setVisitingJammers(mapJammers(visitingRoster?.roster_jammers as unknown[]))
+        setVisitingLines(visitingRoster?.roster_lines || [])
+      } catch (error) {
+        console.error('Error fetching rosters:', error)
+      }
+    }
+
+    fetchRosters()
+  }, [game])
+
+  const handlePeriodChange = async () => {
+    if (!id) return
+
+    const newPeriod = period === 1 ? 2 : 1
+
+    try {
+      const { data, error } = await supabase
+        .from('jams')
+        .select('jam_number')
+        .eq('game_id', id)
+        .eq('period', newPeriod)
+        .order('jam_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (error) throw error
+
+      const nextJamNumber = data ? data.jam_number + 1 : 1
+      setPeriod(newPeriod as 1 | 2)
+      setJamNumber(nextJamNumber)
+    } catch (error) {
+      console.error('Error fetching max jam number:', error)
+      setPeriod(newPeriod as 1 | 2)
+      setJamNumber(1)
+    }
+  }
+
+  const handlePreviousJam = () => {
+    if (jamNumber > 1) {
+      setJamNumber(jamNumber - 1)
+    }
+  }
+
+  const handleNextJam = () => {
+    setJamNumber(jamNumber + 1)
+  }
+
+  const handleNavigateToGameDetails = async () => {
+    await jamFormRef.current?.saveJam()
+    navigate(`/games/${game?.id}`)
+  }
+
+  const handleNavigateToStats = async () => {
+    await jamFormRef.current?.saveJam()
+    navigate(`/games/${game?.id}/stats`)
+  }
 
   if (loading) {
     return (
@@ -97,10 +214,19 @@ function EnterGameStats() {
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h1 className="mb-0">Enter Game Stats</h1>
-            <button className="btn btn-outline-secondary" onClick={() => navigate(`/games/${game.id}`)}>
-              <i className="bi bi-arrow-left me-2"></i>
-              Back to Game Details
-            </button>
+            <div className="d-flex align-items-center gap-2">
+              <button className="btn btn-outline-secondary" onClick={handleNavigateToGameDetails}>
+                <i className="bi bi-arrow-left me-2"></i>
+                Back to Game Details
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleNavigateToStats}
+              >
+                <i className="bi bi-graph-up me-2"></i>
+                View Stats
+              </button>
+            </div>
           </div>
 
           <div className="card mb-4">
@@ -146,9 +272,19 @@ function EnterGameStats() {
             </div>
           </div>
 
-          <div className="alert alert-info">
-            Jam entry form coming soon...
-          </div>
+          <JamEntryForm
+            ref={jamFormRef}
+            game={game}
+            period={period}
+            jamNumber={jamNumber}
+            homeJammers={homeJammers}
+            homeLines={homeLines}
+            visitingJammers={visitingJammers}
+            visitingLines={visitingLines}
+            onPeriodChange={handlePeriodChange}
+            onPreviousJam={handlePreviousJam}
+            onNextJam={handleNextJam}
+          />
         </div>
       </div>
     </div>

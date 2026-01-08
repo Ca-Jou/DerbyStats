@@ -197,7 +197,7 @@ function GameDetails() {
                   className="btn btn-primary"
                   onClick={() => navigate(`/games/${game.id}/stats`)}
                 >
-                  <i className="bi bi-speedometer2 me-2"></i>
+                  <i className="bi bi-graph-up me-2"></i>
                   View Stats
                 </button>
               )}
