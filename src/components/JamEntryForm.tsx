@@ -246,13 +246,12 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
               <div className="form-check">
                 <input
                   className="form-check-input"
-                  type="radio"
-                  name="lead_team"
-                  id="homeLeadRadio"
+                  type="checkbox"
+                  id="homeLeadCheckbox"
                   checked={formData.lead_team === 'home'}
-                  onChange={() => updateFormField('lead_team', 'home')}
+                  onChange={() => updateFormField('lead_team', formData.lead_team === 'home' ? null : 'home')}
                 />
-                <label className="form-check-label" htmlFor="homeLeadRadio">
+                <label className="form-check-label" htmlFor="homeLeadCheckbox">
                   Lead Jammer
                 </label>
               </div>
@@ -324,13 +323,12 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
               <div className="form-check">
                 <input
                   className="form-check-input"
-                  type="radio"
-                  name="lead_team"
-                  id="visitingLeadRadio"
+                  type="checkbox"
+                  id="visitingLeadCheckbox"
                   checked={formData.lead_team === 'visiting'}
-                  onChange={() => updateFormField('lead_team', 'visiting')}
+                  onChange={() => updateFormField('lead_team', formData.lead_team === 'visiting' ? null : 'visiting')}
                 />
-                <label className="form-check-label" htmlFor="visitingLeadRadio">
+                <label className="form-check-label" htmlFor="visitingLeadCheckbox">
                   Lead Jammer
                 </label>
               </div>
