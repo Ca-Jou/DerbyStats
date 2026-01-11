@@ -95,7 +95,24 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
     loadJam()
   }, [game.id, period, jamNumber])
 
+  const isJamEmpty = () => {
+    return (
+      !formData.home_jammer_id &&
+      !formData.home_line_id &&
+      formData.home_points === 0 &&
+      !formData.visiting_jammer_id &&
+      !formData.visiting_line_id &&
+      formData.visiting_points === 0 &&
+      !formData.lead_team
+    )
+  }
+
   const saveJam = async () => {
+    // Don't save if the jam is empty
+    if (isJamEmpty()) {
+      return
+    }
+
     try {
       setSaving(true)
 
