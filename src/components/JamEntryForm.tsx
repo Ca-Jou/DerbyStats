@@ -1,7 +1,6 @@
 import { useEffect, useState, forwardRef, useImperativeHandle } from 'react'
 import { supabase } from '../lib/supabase'
-import { Game } from '../types/Skater'
-import { RosterJammerData, RosterLineData } from '../pages/EnterGameStats'
+import { Game, GameRoster, RosterJammer } from '../types/Skater'
 
 interface JamFormData {
   home_jammer_id: string
@@ -17,10 +16,8 @@ interface JamEntryFormProps {
   game: Game
   period: 1 | 2
   jamNumber: number
-  homeJammers: RosterJammerData[]
-  homeLines: RosterLineData[]
-  visitingJammers: RosterJammerData[]
-  visitingLines: RosterLineData[]
+  homeRoster: GameRoster | null
+  visitingRoster: GameRoster | null
   onPeriodChange: () => void
   onPreviousJam: () => void
   onNextJam: () => void
@@ -34,10 +31,8 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
   game,
   period,
   jamNumber,
-  homeJammers,
-  homeLines,
-  visitingJammers,
-  visitingLines,
+  homeRoster,
+  visitingRoster,
   onPeriodChange,
   onPreviousJam,
   onNextJam
@@ -52,6 +47,22 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
     visiting_points: 0,
     lead_team: null
   })
+
+  const [showNewJammerModal, setShowNewJammerModal] = useState(false)
+  const [newJammerTeam, setNewJammerTeam] = useState<'home' | 'visiting' | null>(null)
+  const [newJammerNumber, setNewJammerNumber] = useState('')
+  const [newJammerName, setNewJammerName] = useState('')
+  const [creatingJammer, setCreatingJammer] = useState(false)
+  const [localHomeJammers, setLocalHomeJammers] = useState<RosterJammer[]>(homeRoster?.roster_jammers || [])
+  const [localVisitingJammers, setLocalVisitingJammers] = useState<RosterJammer[]>(visitingRoster?.roster_jammers || [])
+
+  useEffect(() => {
+    setLocalHomeJammers(homeRoster?.roster_jammers || [])
+  }, [homeRoster?.roster_jammers])
+
+  useEffect(() => {
+    setLocalVisitingJammers(visitingRoster?.roster_jammers || [])
+  }, [visitingRoster?.roster_jammers])
 
   useEffect(() => {
     async function loadJam() {
@@ -158,6 +169,101 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const openNewJammerModal = (team: 'home' | 'visiting') => {
+    setNewJammerTeam(team)
+    setNewJammerNumber('')
+    setNewJammerName('')
+    setShowNewJammerModal(true)
+  }
+
+  const closeNewJammerModal = () => {
+    setShowNewJammerModal(false)
+    setNewJammerTeam(null)
+    setNewJammerNumber('')
+    setNewJammerName('')
+  }
+
+  const createNewJammer = async () => {
+    if (!newJammerTeam || !newJammerNumber || !newJammerName) {
+      alert('Please enter both number and name')
+      return
+    }
+
+    const roster = newJammerTeam === 'home' ? homeRoster : visitingRoster
+
+    if (!roster) {
+      alert('Roster not found')
+      return
+    }
+
+    try {
+      setCreatingJammer(true)
+
+      const teamId = newJammerTeam === 'home' ? game.home_team_id : game.visiting_team_id
+
+      // 1. Create the skater
+      const { data: newSkater, error: skaterError } = await supabase
+        .from('skaters')
+        .insert({
+          number: newJammerNumber,
+          name: newJammerName
+        })
+        .select()
+        .single()
+
+      if (skaterError) throw skaterError
+
+      // 2. Link skater to team
+      const { error: teamSkaterError } = await supabase
+        .from('teams_skaters')
+        .insert({
+          team_id: teamId,
+          skater_id: newSkater.id
+        })
+
+      if (teamSkaterError) throw teamSkaterError
+
+      // 3. Add to roster_jammers
+      const { data: rosterJammer, error: rosterJammerError } = await supabase
+        .from('roster_jammers')
+        .insert({
+          game_roster_id: roster.id,
+          skater_id: newSkater.id
+        })
+        .select()
+        .single()
+
+      if (rosterJammerError) throw rosterJammerError
+
+      // 4. Update local state
+      const newJammerData: RosterJammer = {
+        id: rosterJammer.id,
+        game_roster_id: roster.id,
+        skater_id: newSkater.id,
+        skater: {
+          id: newSkater.id,
+          number: newSkater.number,
+          name: newSkater.name
+        }
+      }
+
+      if (newJammerTeam === 'home') {
+        setLocalHomeJammers([...localHomeJammers, newJammerData])
+        updateFormField('home_jammer_id', newSkater.id)
+      } else {
+        setLocalVisitingJammers([...localVisitingJammers, newJammerData])
+        updateFormField('visiting_jammer_id', newSkater.id)
+      }
+
+      closeNewJammerModal()
+    } catch (error) {
+      console.error('Error creating jammer:', error)
+      alert('Failed to create jammer')
+    } finally {
+      setCreatingJammer(false)
+    }
+  }
+
   useImperativeHandle(ref, () => ({
     saveJam
   }))
@@ -201,18 +307,28 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
 
             <div className="mb-3">
               <label className="form-label">Jammer</label>
-              <select
-                className="form-select"
-                value={formData.home_jammer_id}
-                onChange={(e) => updateFormField('home_jammer_id', e.target.value)}
-              >
-                <option value="">Select Jammer</option>
-                {homeJammers.map((jammer) => (
-                  <option key={jammer.id} value={jammer.skater_id}>
-                    {`#${jammer.skater.number} ${jammer.skater.name}`}
-                  </option>
-                ))}
-              </select>
+              <div className="d-flex gap-2">
+                <select
+                  className="form-select"
+                  value={formData.home_jammer_id}
+                  onChange={(e) => updateFormField('home_jammer_id', e.target.value)}
+                >
+                  <option value="">Select Jammer</option>
+                  {localHomeJammers.map((jammer) => (
+                    <option key={jammer.id} value={jammer.skater_id}>
+                      {jammer.skater ? `#${jammer.skater.number} ${jammer.skater.name}` : 'Unknown'}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-outline-success"
+                  onClick={() => openNewJammerModal('home')}
+                  title="Add new jammer"
+                >
+                  <i className="bi bi-plus-lg"></i>
+                </button>
+              </div>
             </div>
 
             <div className="mb-3">
@@ -223,7 +339,7 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
                 onChange={(e) => updateFormField('home_line_id', e.target.value)}
               >
                 <option value="">Select Line</option>
-                {homeLines.map((line) => (
+                {(homeRoster?.roster_lines || []).map((line) => (
                   <option key={line.id} value={line.id}>
                     {line.name}
                   </option>
@@ -278,18 +394,28 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
 
             <div className="mb-3">
               <label className="form-label">Jammer</label>
-              <select
-                className="form-select"
-                value={formData.visiting_jammer_id}
-                onChange={(e) => updateFormField('visiting_jammer_id', e.target.value)}
-              >
-                <option value="">Select Jammer</option>
-                {visitingJammers.map((jammer) => (
-                  <option key={jammer.id} value={jammer.skater_id}>
-                    {`#${jammer.skater.number} ${jammer.skater.name}`}
-                  </option>
-                ))}
-              </select>
+              <div className="d-flex gap-2">
+                <select
+                  className="form-select"
+                  value={formData.visiting_jammer_id}
+                  onChange={(e) => updateFormField('visiting_jammer_id', e.target.value)}
+                >
+                  <option value="">Select Jammer</option>
+                  {localVisitingJammers.map((jammer) => (
+                    <option key={jammer.id} value={jammer.skater_id}>
+                      {jammer.skater ? `#${jammer.skater.number} ${jammer.skater.name}` : 'Unknown'}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-outline-success"
+                  onClick={() => openNewJammerModal('visiting')}
+                  title="Add new jammer"
+                >
+                  <i className="bi bi-plus-lg"></i>
+                </button>
+              </div>
             </div>
 
             <div className="mb-3">
@@ -300,7 +426,7 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
                 onChange={(e) => updateFormField('visiting_line_id', e.target.value)}
               >
                 <option value="">Select Line</option>
-                {visitingLines.map((line) => (
+                {(visitingRoster?.roster_lines || []).map((line) => (
                   <option key={line.id} value={line.id}>
                     {line.name}
                   </option>
@@ -338,7 +464,7 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
 
         <div className="d-flex justify-content-between mt-4">
           <button
-            className="btn btn-secondary"
+            className="btn btn-info"
             onClick={handlePreviousJam}
             disabled={jamNumber === 1 || saving}
           >
@@ -363,7 +489,7 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
             )}
           </button>
           <button
-            className="btn btn-secondary"
+            className="btn btn-info"
             onClick={handleNextJam}
             disabled={saving}
           >
@@ -372,6 +498,76 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
           </button>
         </div>
       </div>
+
+      {/* New Jammer Modal */}
+      {showNewJammerModal && (
+        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  Add New Jammer - {newJammerTeam === 'home' ? (game.home_team?.name || 'Home') : (game.visiting_team?.name || 'Visiting')}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={closeNewJammerModal}
+                  disabled={creatingJammer}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label">Number</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newJammerNumber}
+                    onChange={(e) => setNewJammerNumber(e.target.value)}
+                    placeholder="Enter jammer number"
+                    disabled={creatingJammer}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newJammerName}
+                    onChange={(e) => setNewJammerName(e.target.value)}
+                    placeholder="Enter jammer name"
+                    disabled={creatingJammer}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={closeNewJammerModal}
+                  disabled={creatingJammer}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={createNewJammer}
+                  disabled={creatingJammer}
+                >
+                  {creatingJammer ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Creating...
+                    </>
+                  ) : (
+                    'Create Jammer'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 })

@@ -1,19 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Game, Skater } from '../types/Skater'
+import { Game, GameRoster, RosterJammer } from '../types/Skater'
 import JamEntryForm, { JamEntryFormRef } from '../components/JamEntryForm'
-
-export interface RosterJammerData {
-  id: string
-  skater_id: string
-  skater: Skater
-}
-
-export interface RosterLineData {
-  id: string
-  name: string
-}
 
 function EnterGameStats() {
   const { id } = useParams<{ id: string }>()
@@ -27,10 +16,8 @@ function EnterGameStats() {
   const [period, setPeriod] = useState<1 | 2>(1)
   const [jamNumber, setJamNumber] = useState(1)
 
-  const [homeJammers, setHomeJammers] = useState<RosterJammerData[]>([])
-  const [homeLines, setHomeLines] = useState<RosterLineData[]>([])
-  const [visitingJammers, setVisitingJammers] = useState<RosterJammerData[]>([])
-  const [visitingLines, setVisitingLines] = useState<RosterLineData[]>([])
+  const [homeRoster, setHomeRoster] = useState<GameRoster | null>(null)
+  const [visitingRoster, setVisitingRoster] = useState<GameRoster | null>(null)
 
   useEffect(() => {
     async function fetchGame() {
@@ -99,22 +86,34 @@ function EnterGameStats() {
 
         if (error) throw error
 
-        const homeRoster = rosters?.find((r) => r.team_id === game.home_team_id)
-        const visitingRoster = rosters?.find((r) => r.team_id === game.visiting_team_id)
+        const homeRosterData = rosters?.find((r) => r.team_id === game.home_team_id)
+        const visitingRosterData = rosters?.find((r) => r.team_id === game.visiting_team_id)
 
-        const mapJammers = (jammers: unknown[] | undefined): RosterJammerData[] => {
+        const mapJammers = (jammers: unknown[] | undefined): RosterJammer[] => {
           if (!jammers) return []
           return jammers.map((jammer: any) => ({
             id: jammer.id,
+            game_roster_id: jammer.game_roster_id,
             skater_id: jammer.skater_id,
             skater: Array.isArray(jammer.skater) ? jammer.skater[0] : jammer.skater
           }))
         }
 
-        setHomeJammers(mapJammers(homeRoster?.roster_jammers as unknown[]))
-        setHomeLines(homeRoster?.roster_lines || [])
-        setVisitingJammers(mapJammers(visitingRoster?.roster_jammers as unknown[]))
-        setVisitingLines(visitingRoster?.roster_lines || [])
+        setHomeRoster(homeRosterData ? {
+          id: homeRosterData.id,
+          game_id: game.id,
+          team_id: game.home_team_id,
+          roster_jammers: mapJammers(homeRosterData.roster_jammers as unknown[]),
+          roster_lines: homeRosterData.roster_lines || []
+        } : null)
+
+        setVisitingRoster(visitingRosterData ? {
+          id: visitingRosterData.id,
+          game_id: game.id,
+          team_id: game.visiting_team_id,
+          roster_jammers: mapJammers(visitingRosterData.roster_jammers as unknown[]),
+          roster_lines: visitingRosterData.roster_lines || []
+        } : null)
       } catch (error) {
         console.error('Error fetching rosters:', error)
       }
@@ -277,10 +276,8 @@ function EnterGameStats() {
             game={game}
             period={period}
             jamNumber={jamNumber}
-            homeJammers={homeJammers}
-            homeLines={homeLines}
-            visitingJammers={visitingJammers}
-            visitingLines={visitingLines}
+            homeRoster={homeRoster}
+            visitingRoster={visitingRoster}
             onPeriodChange={handlePeriodChange}
             onPreviousJam={handlePreviousJam}
             onNextJam={handleNextJam}
