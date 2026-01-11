@@ -105,9 +105,9 @@ function SkaterDetails() {
       <div className="row">
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="mb-0">Skater Details</h1>
+            <h1 className="mb-0 text-dark">Skater Details</h1>
             <div>
-              <button className="btn btn-outline-secondary me-2" onClick={() => navigate('/skaters')}>
+              <button className="btn btn-outline-info me-2" onClick={() => navigate('/skaters')}>
                 <i className="bi bi-arrow-left me-2"></i>
                 Back
               </button>

@@ -120,9 +120,9 @@ function Games() {
       <div className="row">
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="mb-0">Games</h1>
+            <h1 className="mb-0 text-dark">Games</h1>
             <button
-              className="btn btn-outline-primary"
+              className="btn btn-outline-success"
               onClick={() => setShowModal(true)}
             >
               <i className="bi bi-plus-circle me-2"></i>
@@ -178,6 +178,12 @@ function Games() {
                     </td>
                     <td>{game.location || '-'}</td>
                     <td>
+                      <button
+                        className="btn btn-primary btn-sm me-2"
+                        onClick={() => navigate(`/games/${game.id}/stats`)}
+                      >
+                        <i className="bi bi-graph-up"></i>
+                      </button>
                       <button
                         className="btn btn-outline-primary btn-sm me-2"
                         onClick={() => navigate(`/games/${game.id}`)}

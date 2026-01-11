@@ -67,9 +67,9 @@ function Skaters() {
       <div className="row">
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="mb-0">Skaters</h1>
+            <h1 className="mb-0 text-dark">Skaters</h1>
             <button
-              className="btn btn-outline-primary"
+              className="btn btn-outline-success"
               onClick={() => setShowModal(true)}
             >
               <i className="bi bi-plus-circle me-2"></i>

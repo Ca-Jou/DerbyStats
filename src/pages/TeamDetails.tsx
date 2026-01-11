@@ -243,7 +243,7 @@ function TeamDetails() {
         <div className="alert alert-danger" role="alert">
           Error: {error}
         </div>
-        <button className="btn btn-outline-secondary" onClick={() => navigate('/teams')}>
+        <button className="btn btn-outline-info" onClick={() => navigate('/teams')}>
           Back to Teams
         </button>
       </div>
@@ -256,7 +256,7 @@ function TeamDetails() {
         <div className="alert alert-warning" role="alert">
           Team not found
         </div>
-        <button className="btn btn-outline-secondary" onClick={() => navigate('/teams')}>
+        <button className="btn btn-outline-info" onClick={() => navigate('/teams')}>
           Back to Teams
         </button>
       </div>
@@ -268,9 +268,9 @@ function TeamDetails() {
       <div className="row">
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="mb-0">Team Details</h1>
+            <h1 className="mb-0 text-dark">Team Details</h1>
             <div>
-              <button className="btn btn-outline-secondary me-2" onClick={() => navigate('/teams')}>
+              <button className="btn btn-outline-info me-2" onClick={() => navigate('/teams')}>
                 <i className="bi bi-arrow-left me-2"></i>
                 Back
               </button>
@@ -493,7 +493,7 @@ function TeamDetails() {
                       <div className="d-flex gap-2">
                         <button
                           type="button"
-                          className="btn btn-outline-secondary btn-sm"
+                          className="btn btn-outline-info btn-sm"
                           onClick={() => {
                             setShowCreateSkater(false)
                             setNewSkaterNumber('')
@@ -529,7 +529,7 @@ function TeamDetails() {
                   <div className="modal-footer">
                     <button
                       type="button"
-                      className="btn btn-outline-secondary"
+                      className="btn btn-outline-info"
                       onClick={() => {
                         setShowAddSkaterModal(false)
                         setSelectedSkaters([])
@@ -588,7 +588,7 @@ function TeamDetails() {
                 <div className="modal-footer">
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-info"
                     onClick={() => {
                       setShowRemoveModal(false)
                       setSkaterToRemove(null)

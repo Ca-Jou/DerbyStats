@@ -14,6 +14,7 @@ import {
   Legend
 } from 'chart.js'
 import { Bar, Line } from 'react-chartjs-2'
+import colors from '../assets/scss/colors.module.scss'
 
 ChartJS.register(
   CategoryScale,
@@ -348,15 +349,15 @@ function GameStats() {
       {
         label: game?.home_team?.name || 'Home Team',
         data: scoreEvolution.homeScores,
-        borderColor: game?.home_team_color || '#4F46E5',
-        backgroundColor: game?.home_team_color || '#4F46E5',
+        borderColor: selectedTeam === 'home' ? colors.primary : colors.info,
+        backgroundColor: selectedTeam === 'home' ? colors.primary : colors.info,
         tension: 0.1
       },
       {
         label: game?.visiting_team?.name || 'Visiting Team',
         data: scoreEvolution.visitingScores,
-        borderColor: game?.visiting_team_color || '#DC2626',
-        backgroundColor: game?.visiting_team_color || '#DC2626',
+        borderColor: selectedTeam === 'visiting' ? colors.primary : colors.info,
+        backgroundColor: selectedTeam === 'visiting' ? colors.primary : colors.info,
         tension: 0.1
       }
     ]
@@ -394,8 +395,8 @@ function GameStats() {
       {
         label: 'Jams Played',
         data: jammerStats.map((j) => j.jam_count),
-        backgroundColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
         borderWidth: 1
       }
     ]
@@ -441,8 +442,8 @@ function GameStats() {
       {
         label: 'Lead Percentage',
         data: jammerStats.map((j) => j.lead_percentage),
-        backgroundColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
         borderWidth: 1
       }
     ]
@@ -492,17 +493,24 @@ function GameStats() {
       {
         label: 'Points For',
         data: jammerStats.map((j) => j.points_for),
-        backgroundColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
         borderWidth: 1
       },
       {
         label: 'Points Against',
         data: jammerStats.map((j) => j.points_against),
-        backgroundColor: selectedTeam === 'home' ? game?.visiting_team_color || '#DC2626' : game?.home_team_color || '#4F46E5',
-        borderColor: selectedTeam === 'home' ? game?.visiting_team_color || '#DC2626' : game?.home_team_color || '#4F46E5',
+        backgroundColor: colors.info,
+        borderColor: colors.info,
         borderWidth: 1
-      }
+      },
+      {
+        label: 'Total Score',
+        data: jammerStats.map((j) => j.points_for - j.points_against),
+        backgroundColor: colors.warning,
+        borderColor: colors.warning,
+        borderWidth: 1
+      },
     ]
   }
 
@@ -525,8 +533,13 @@ function GameStats() {
     scales: {
       y: {
         beginAtZero: true,
-        ticks: {
-          stepSize: 5
+        grid: {
+          color: (context: any) => {
+            if (context.tick.value === 0) {
+              return 'rgba(0, 0, 0, 0.3)'
+            }
+            return 'rgba(0, 0, 0, 0.1)'
+          }
         }
       }
     }
@@ -538,8 +551,8 @@ function GameStats() {
       {
         label: 'Jams Played',
         data: lineStats.map((l) => l.jam_count),
-        backgroundColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
         borderWidth: 1
       }
     ]
@@ -585,8 +598,8 @@ function GameStats() {
       {
         label: 'Lead Percentage',
         data: lineStats.map((l) => l.lead_percentage),
-        backgroundColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
         borderWidth: 1
       }
     ]
@@ -630,61 +643,30 @@ function GameStats() {
     }
   }
 
-  const jammerTotalScoreChartData = {
-    labels: jammerStats.map((j) => `#${j.skater_number} ${j.skater_name}`),
-    datasets: [
-      {
-        label: 'Total Score',
-        data: jammerStats.map((j) => j.points_for - j.points_against),
-        backgroundColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderWidth: 1
-      }
-    ]
-  }
-
-  const jammerTotalScoreChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false
-      },
-      title: {
-        display: true,
-        text: 'Total Score',
-        font: {
-          size: 18
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 5
-        }
-      }
-    }
-  }
-
   const blockerPointsChartData = {
     labels: lineStats.map((l) => l.line_name),
     datasets: [
       {
         label: 'Points For',
         data: lineStats.map((l) => l.points_for),
-        backgroundColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
         borderWidth: 1
       },
       {
         label: 'Points Against',
         data: lineStats.map((l) => l.points_against),
-        backgroundColor: selectedTeam === 'home' ? game?.visiting_team_color || '#DC2626' : game?.home_team_color || '#4F46E5',
-        borderColor: selectedTeam === 'home' ? game?.visiting_team_color || '#DC2626' : game?.home_team_color || '#4F46E5',
+        backgroundColor: colors.info,
+        borderColor: colors.info,
         borderWidth: 1
-      }
+      },
+      {
+        label: 'Total Score',
+        data: lineStats.map((l) => l.points_for - l.points_against),
+        backgroundColor: colors.warning,
+        borderColor: colors.warning,
+        borderWidth: 1
+      },
     ]
   }
 
@@ -707,46 +689,13 @@ function GameStats() {
     scales: {
       y: {
         beginAtZero: true,
-        ticks: {
-          stepSize: 5
-        }
-      }
-    }
-  }
-
-  const blockerTotalScoreChartData = {
-    labels: lineStats.map((l) => l.line_name),
-    datasets: [
-      {
-        label: 'Total Score',
-        data: lineStats.map((l) => l.points_for - l.points_against),
-        backgroundColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderColor: selectedTeam === 'home' ? game?.home_team_color || '#4F46E5' : game?.visiting_team_color || '#DC2626',
-        borderWidth: 1
-      }
-    ]
-  }
-
-  const blockerTotalScoreChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false
-      },
-      title: {
-        display: true,
-        text: 'Total Score',
-        font: {
-          size: 18
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 5
+        grid: {
+          color: (context: any) => {
+            if (context.tick.value === 0) {
+              return 'rgba(0, 0, 0, 0.3)'
+            }
+            return 'rgba(0, 0, 0, 0.1)'
+          }
         }
       }
     }
@@ -770,7 +719,7 @@ function GameStats() {
         <div className="alert alert-danger" role="alert">
           Error: {error}
         </div>
-        <button className="btn btn-outline-secondary" onClick={() => navigate(`/games/${id}`)}>
+        <button className="btn btn-outline-info" onClick={() => navigate(`/games/${id}`)}>
           Back to Game Details
         </button>
       </div>
@@ -783,7 +732,7 @@ function GameStats() {
         <div className="alert alert-warning" role="alert">
           Game not found
         </div>
-        <button className="btn btn-outline-secondary" onClick={() => navigate('/games')}>
+        <button className="btn btn-outline-info" onClick={() => navigate('/games')}>
           Back to Games
         </button>
       </div>
@@ -797,7 +746,7 @@ function GameStats() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h1 className="mb-0">Game Statistics</h1>
             <div className="d-flex align-items-center gap-2">
-              <button className="btn btn-outline-secondary" onClick={() => navigate(`/games/${game.id}`)}>
+              <button className="btn btn-outline-info" onClick={() => navigate(`/games/${game.id}`)}>
                 <i className="bi bi-arrow-left me-2"></i>
                 Back to Game Details
               </button>
@@ -843,19 +792,6 @@ function GameStats() {
                     className={`btn ${selectedTeam === 'home' ? 'btn-primary' : 'btn-outline-primary'}`}
                     onClick={() => setSelectedTeam('home')}
                   >
-                    {game.home_team_color && (
-                      <span
-                        className="d-inline-block me-2"
-                        style={{
-                          width: '12px',
-                          height: '12px',
-                          backgroundColor: game.home_team_color,
-                          border: '1px solid #dee2e6',
-                          borderRadius: '2px',
-                          verticalAlign: 'middle'
-                        }}
-                      ></span>
-                    )}
                     {game.home_team?.name || 'Home Team'}
                   </button>
                   <button
@@ -863,19 +799,6 @@ function GameStats() {
                     className={`btn ${selectedTeam === 'visiting' ? 'btn-primary' : 'btn-outline-primary'}`}
                     onClick={() => setSelectedTeam('visiting')}
                   >
-                    {game.visiting_team_color && (
-                      <span
-                        className="d-inline-block me-2"
-                        style={{
-                          width: '12px',
-                          height: '12px',
-                          backgroundColor: game.visiting_team_color,
-                          border: '1px solid #dee2e6',
-                          borderRadius: '2px',
-                          verticalAlign: 'middle'
-                        }}
-                      ></span>
-                    )}
                     {game.visiting_team?.name || 'Visiting Team'}
                   </button>
                 </div>
@@ -912,9 +835,6 @@ function GameStats() {
                   <div style={{ height: '400px' }} className="mb-4">
                     <Bar data={jammerPointsChartData} options={jammerPointsChartOptions} />
                   </div>
-                  <div style={{ height: '400px' }}>
-                    <Bar data={jammerTotalScoreChartData} options={jammerTotalScoreChartOptions} />
-                  </div>
                 </>
               ) : (
                 <div className="alert alert-info">
@@ -937,9 +857,6 @@ function GameStats() {
                   </div>
                   <div style={{ height: '400px' }} className="mb-4">
                     <Bar data={blockerPointsChartData} options={blockerPointsChartOptions} />
-                  </div>
-                  <div style={{ height: '400px' }}>
-                    <Bar data={blockerTotalScoreChartData} options={blockerTotalScoreChartOptions} />
                   </div>
                 </>
               ) : (

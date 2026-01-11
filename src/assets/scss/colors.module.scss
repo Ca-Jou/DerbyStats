@@ -1,0 +1,12 @@
+// Import color definitions from _variables.scss (single source of truth)
+@import 'variables';
+
+// Export for use in TypeScript/JavaScript
+:export {
+  primary: $primary;
+  success: $success;
+  warning: $warning;
+  danger: $danger;
+  info: $info;
+  dark: $dark;
+}

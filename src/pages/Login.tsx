@@ -58,7 +58,7 @@ function Login() {
                 <p className="text-muted small">
                   Didn't receive the email? Check your spam folder or{' '}
                   <button
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-info"
                     onClick={() => setEmailSent(false)}
                   >
                     try again

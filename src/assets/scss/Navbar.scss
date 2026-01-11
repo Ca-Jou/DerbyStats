@@ -1,0 +1,68 @@
+@import 'variables';
+@import 'mixins';
+
+/* Sidebar styles for large screens */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: $sidebar-width;
+  z-index: 1000;
+  box-shadow: $box-shadow-sm;
+
+  .nav-link {
+    padding: 0.75rem 1rem;
+    border-radius: $border-radius-sm;
+    margin-bottom: $border-radius-sm;
+    color: $dark;
+    @include smooth-transition(background-color $transition-fast, color $transition-fast);
+
+    &:hover {
+      background-color: $info;
+      color: $dark;
+    }
+
+    &.active {
+      background-color: $info;
+      color: $dark;
+    }
+
+    i {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+.sidebar-footer {
+  margin-top: auto;
+}
+
+/* Mobile navbar styles */
+@include respond-below-lg {
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: $box-shadow;
+
+    .nav-link {
+      padding: 0.5rem 1rem;
+      color: $dark;
+
+      &:hover {
+        color: $info;
+      }
+
+      &.active {
+        color: $info;
+      }
+
+      i {
+        font-size: 1.5rem;
+      }
+    }
+  }
+}

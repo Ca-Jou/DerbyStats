@@ -304,7 +304,7 @@ function CreateRosterForm({ show, gameId, teamId, teamName, onClose, onSuccess, 
                           <div className="d-flex gap-2">
                             <button
                               type="button"
-                              className="btn btn-outline-secondary btn-sm"
+                              className="btn btn-outline-info btn-sm"
                               onClick={() => {
                                 setShowCreateSkater(false)
                                 setNewSkaterNumber('')
@@ -380,7 +380,7 @@ function CreateRosterForm({ show, gameId, teamId, teamName, onClose, onSuccess, 
               <div className="modal-footer">
                 <button
                   type="button"
-                  className="btn btn-outline-secondary"
+                  className="btn btn-outline-info"
                   onClick={handleClose}
                   disabled={submitting || creating}
                 >

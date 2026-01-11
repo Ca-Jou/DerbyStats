@@ -1,0 +1,29 @@
+// Media query mixins
+@mixin respond-to-lg {
+  @media (min-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+@mixin respond-below-lg {
+  @media (max-width: #{$breakpoint-lg - 0.02px}) {
+    @content;
+  }
+}
+
+@mixin respond-to-md {
+  @media (min-width: $breakpoint-md) {
+    @content;
+  }
+}
+
+@mixin respond-to-sm {
+  @media (min-width: $breakpoint-sm) {
+    @content;
+  }
+}
+
+// Transition mixin
+@mixin smooth-transition($properties...) {
+  transition: $properties;
+}

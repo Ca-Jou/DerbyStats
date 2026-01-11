@@ -1,0 +1,11 @@
+// 1. Import your custom variables first (overrides Bootstrap defaults)
+@import 'variables';
+
+// 2. Import Bootstrap's Sass source files
+// Bootstrap will use your custom variables since they're defined first
+@import '../../../node_modules/bootstrap/scss/bootstrap';
+
+// 3. Import your custom mixins and component styles
+@import 'mixins';
+@import 'App';
+@import 'Navbar';

@@ -165,7 +165,7 @@ function GameDetails() {
         <div className="alert alert-danger" role="alert">
           Error: {error}
         </div>
-        <button className="btn btn-outline-secondary" onClick={() => navigate('/games')}>
+        <button className="btn btn-outline-info" onClick={() => navigate('/games')}>
           Back to Games
         </button>
       </div>
@@ -178,7 +178,7 @@ function GameDetails() {
         <div className="alert alert-warning" role="alert">
           Game not found
         </div>
-        <button className="btn btn-outline-secondary" onClick={() => navigate('/games')}>
+        <button className="btn btn-outline-info" onClick={() => navigate('/games')}>
           Back to Games
         </button>
       </div>
@@ -203,7 +203,7 @@ function GameDetails() {
               )}
             </div>
             <div>
-              <button className="btn btn-outline-secondary me-2" onClick={() => navigate('/games')}>
+              <button className="btn btn-outline-info me-2" onClick={() => navigate('/games')}>
                 <i className="bi bi-arrow-left me-2"></i>
                 Back
               </button>
@@ -470,7 +470,7 @@ function GameDetails() {
                 <div className="modal-footer">
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-info"
                     onClick={() => {
                       setShowDeleteRosterConfirm(false)
                       setRosterToDelete(null)

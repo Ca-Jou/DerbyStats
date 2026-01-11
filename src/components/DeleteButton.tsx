@@ -90,7 +90,7 @@ function DeleteButton({
                 <div className="modal-footer">
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-info"
                     onClick={() => setShowModal(false)}
                     disabled={isLoading}
                   >

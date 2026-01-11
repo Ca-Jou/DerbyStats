@@ -255,7 +255,7 @@ function CreateGameForm({ show, onClose, onSuccess, onError }: CreateGameFormPro
               <div className="modal-footer">
                 <button
                   type="button"
-                  className="btn btn-outline-secondary"
+                  className="btn btn-outline-info"
                   onClick={handleClose}
                   disabled={submitting}
                 >

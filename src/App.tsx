@@ -12,7 +12,6 @@ import Games from './pages/Games'
 import GameDetails from './pages/GameDetails'
 import GameStats from './pages/GameStats'
 import EnterGameStats from './pages/EnterGameStats'
-import './assets/css/App.css'
 
 function App() {
   return (

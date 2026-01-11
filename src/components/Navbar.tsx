@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import '../assets/css/Navbar.css'
 
 function Navbar() {
   const location = useLocation()
@@ -49,7 +48,7 @@ function Navbar() {
     <>
       {/* Desktop sidebar - visible on large screens */}
       <nav className="sidebar d-none d-lg-flex flex-column bg-light">
-        <Link className="navbar-brand p-3 text-center border-bottom" to="/">
+        <Link className="navbar-brand p-3 text-center border-bottom text-dark" to="/">
           DerbyStats
         </Link>
 
@@ -61,14 +60,14 @@ function Navbar() {
 
         {user ? (
           <div className="sidebar-footer p-3 border-top">
-            <div className="mb-2 small text-truncate">{user.email}</div>
-            <button onClick={handleLogout} className="btn btn-outline-secondary btn-sm w-100">
+            <div className="mb-2 small text-truncate text-center">{user.email}</div>
+            <button onClick={handleLogout} className="btn btn-outline-primary btn-sm w-100">
               Logout
             </button>
           </div>
         ) : (
           <div className="p-3 border-top">
-            <Link to="/login" className="btn btn-outline-secondary btn-sm w-100">
+            <Link to="/login" className="btn btn-primary btn-sm w-100">
               Login
             </Link>
           </div>
@@ -85,11 +84,11 @@ function Navbar() {
           )}
 
           {user ? (
-            <button onClick={handleLogout} className="btn btn-outline-secondary btn-sm">
+            <button onClick={handleLogout} className="btn btn-outline-primary btn-sm">
               Logout
             </button>
           ) : (
-            <Link to="/login" className="btn btn-outline-secondary btn-sm">
+            <Link to="/login" className="btn btn-primary btn-sm">
               Login
             </Link>
           )}

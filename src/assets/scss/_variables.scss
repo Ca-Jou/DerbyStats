@@ -1,0 +1,45 @@
+// PRD color palette
+$prd-blue: #030aee;
+$prd-green: #60a7a9;
+$prd-yellow: #ffbc08;
+$prd-red: #d55c41;
+$prd-pink: #d7aef2;
+$prd-dark: #060932;
+
+// Colors
+$primary: $prd-blue;
+$success: $prd-green;
+$warning: $prd-yellow;
+$danger: $prd-red;
+$info: $prd-pink;
+$dark: $prd-dark;
+
+// Shadows
+$box-shadow-sm: 2px 0 5px rgba(0, 0, 0, 0.1);
+$box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+// Spacing
+$sidebar-width: 250px;
+$navbar-height: 56px;
+
+// Border radius
+$border-radius-sm: 0.25rem;
+
+// Transitions
+$transition-fast: 0.2s;
+$transition-normal: 0.3s;
+
+// Breakpoints (matching Bootstrap's breakpoints)
+$breakpoint-lg: 992px;
+$breakpoint-md: 768px;
+$breakpoint-sm: 576px;
+
+// Export for use in TypeScript/JavaScript via CSS Modules
+:export {
+  primary: $primary;
+  success: $success;
+  warning: $warning;
+  danger: $danger;
+  info: $info;
+  dark: $dark;
+}

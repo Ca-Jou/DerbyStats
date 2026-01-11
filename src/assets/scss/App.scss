@@ -1,0 +1,16 @@
+@import 'variables';
+@import 'mixins';
+
+/* Main content area styles */
+.main-content {
+  margin-left: 0;
+  @include smooth-transition(margin-left $transition-normal ease);
+
+  @include respond-to-lg {
+    margin-left: $sidebar-width;
+  }
+
+  @include respond-below-lg {
+    padding-top: $navbar-height;
+  }
+}
