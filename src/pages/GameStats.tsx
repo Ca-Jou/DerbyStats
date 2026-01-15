@@ -143,14 +143,14 @@ function GameStats() {
         const jammerPointsAgainst = new Map<string, number>()
 
         jams?.forEach((jam: Record<string, unknown>) => {
-          const jammerId = jam[jammerField]
+          const jammerId = jam[jammerField] as string
           if (jammerId) {
             jammerCounts.set(jammerId, (jammerCounts.get(jammerId) || 0) + 1)
             if (jam.lead_team === leadTeamValue) {
               jammerLeadCounts.set(jammerId, (jammerLeadCounts.get(jammerId) || 0) + 1)
             }
-            const pointsFor = jam[pointsForField] || 0
-            const pointsAgainst = jam[pointsAgainstField] || 0
+            const pointsFor = (jam[pointsForField] as number) || 0
+            const pointsAgainst = (jam[pointsAgainstField] as number) || 0
             jammerPointsFor.set(jammerId, (jammerPointsFor.get(jammerId) || 0) + pointsFor)
             jammerPointsAgainst.set(jammerId, (jammerPointsAgainst.get(jammerId) || 0) + pointsAgainst)
           }
@@ -235,14 +235,14 @@ function GameStats() {
         const linePointsAgainst = new Map<string, number>()
 
         jams?.forEach((jam: Record<string, unknown>) => {
-          const lineId = jam[lineField]
+          const lineId = jam[lineField] as string
           if (lineId) {
             lineCounts.set(lineId, (lineCounts.get(lineId) || 0) + 1)
             if (jam.lead_team === leadTeamValue) {
               lineLeadCounts.set(lineId, (lineLeadCounts.get(lineId) || 0) + 1)
             }
-            const pointsFor = jam[pointsForField] || 0
-            const pointsAgainst = jam[pointsAgainstField] || 0
+            const pointsFor = (jam[pointsForField] as number) || 0
+            const pointsAgainst = (jam[pointsAgainstField] as number) || 0
             linePointsFor.set(lineId, (linePointsFor.get(lineId) || 0) + pointsFor)
             linePointsAgainst.set(lineId, (linePointsAgainst.get(lineId) || 0) + pointsAgainst)
           }
@@ -322,8 +322,8 @@ function GameStats() {
         let visitingCumulative = 0
 
         jams.forEach((jam: Record<string, unknown>) => {
-          homeCumulative += jam.home_points || 0
-          visitingCumulative += jam.visiting_points || 0
+          homeCumulative += (jam.home_points as number) || 0
+          visitingCumulative += (jam.visiting_points as number) || 0
 
           const label = selectedPeriod === 'all'
             ? `P${jam.period} J${jam.jam_number}`
@@ -418,8 +418,8 @@ function GameStats() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: { parsed: { y: number }; dataIndex: number }) {
-            const value = context.parsed.y
+          label: function(context: { parsed: { y: number | null }; dataIndex: number }) {
+            const value = context.parsed.y || 0
             const percentage = totalJams > 0 ? ((value / totalJams) * 100).toFixed(0) : 0
             return `Jams played: ${value}/${totalJams} (${percentage}%)`
           }
@@ -465,7 +465,7 @@ function GameStats() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: { parsed: { y: number }; dataIndex: number }) {
+          label: function(context: { parsed: { y: number | null }; dataIndex: number }) {
             const dataIndex = context.dataIndex
             const jammer = jammerStats[dataIndex]
             const percentage = Math.round(jammer.lead_percentage)
@@ -574,8 +574,8 @@ function GameStats() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: { parsed: { y: number }; dataIndex: number }) {
-            const value = context.parsed.y
+          label: function(context: { parsed: { y: number | null }; dataIndex: number }) {
+            const value = context.parsed.y || 0
             const percentage = totalJams > 0 ? ((value / totalJams) * 100).toFixed(0) : 0
             return `Jams played: ${value}/${totalJams} (${percentage}%)`
           }
@@ -621,7 +621,7 @@ function GameStats() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: { parsed: { y: number }; dataIndex: number }) {
+          label: function(context: { parsed: { y: number | null }; dataIndex: number }) {
             const dataIndex = context.dataIndex
             const line = lineStats[dataIndex]
             const percentage = Math.round(line.lead_percentage)

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Game, GameRoster } from '../types/Skater'
+import { Game, GameRoster, Skater } from '../types/Skater'
 import DeleteButton from '../components/DeleteButton'
 import EditGameForm from '../components/EditGameForm'
 import CreateRosterForm from '../components/CreateRosterForm'
