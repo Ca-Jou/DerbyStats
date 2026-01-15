@@ -91,7 +91,7 @@ function EnterGameStats() {
 
         const mapJammers = (jammers: unknown[] | undefined): RosterJammer[] => {
           if (!jammers) return []
-          return jammers.map((jammer: any) => ({
+          return jammers.map((jammer: { id: string; game_roster_id: string; skater_id: string; skater: Skater | Skater[] }) => ({
             id: jammer.id,
             game_roster_id: jammer.game_roster_id,
             skater_id: jammer.skater_id,

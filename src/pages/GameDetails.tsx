@@ -52,11 +52,11 @@ function GameDetails() {
       const visitingRosterData = data?.find(r => r.team_id === visitingTeamId)
 
       // Map rosters to handle array returns from Supabase
-      const mapRoster = (roster: any): GameRoster | null => {
+      const mapRoster = (roster: { id: string; game_id: string; team_id: string; roster_jammers?: Array<{ id: string; game_roster_id: string; skater_id: string; skater: Skater | Skater[] }>; roster_lines?: Array<{ id: string; game_roster_id: string; name: string }> } | undefined): GameRoster | null => {
         if (!roster) return null
         return {
           ...roster,
-          roster_jammers: roster.roster_jammers?.map((jammer: any) => ({
+          roster_jammers: roster.roster_jammers?.map((jammer) => ({
             ...jammer,
             skater: Array.isArray(jammer.skater) ? jammer.skater[0] : jammer.skater
           })) || []

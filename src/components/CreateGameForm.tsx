@@ -26,6 +26,7 @@ function CreateGameForm({ show, onClose, onSuccess, onError }: CreateGameFormPro
     if (show) {
       fetchTeams()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show])
 
   const fetchTeams = async () => {

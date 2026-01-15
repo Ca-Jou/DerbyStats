@@ -43,6 +43,7 @@ function EditGameForm({ show, game, onClose, onSuccess, onError }: EditGameFormP
       })
       fetchTeams()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, game])
 
   const fetchTeams = async () => {

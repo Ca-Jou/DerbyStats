@@ -142,7 +142,7 @@ function GameStats() {
         const jammerPointsFor = new Map<string, number>()
         const jammerPointsAgainst = new Map<string, number>()
 
-        jams?.forEach((jam: any) => {
+        jams?.forEach((jam: Record<string, unknown>) => {
           const jammerId = jam[jammerField]
           if (jammerId) {
             jammerCounts.set(jammerId, (jammerCounts.get(jammerId) || 0) + 1)
@@ -234,7 +234,7 @@ function GameStats() {
         const linePointsFor = new Map<string, number>()
         const linePointsAgainst = new Map<string, number>()
 
-        jams?.forEach((jam: any) => {
+        jams?.forEach((jam: Record<string, unknown>) => {
           const lineId = jam[lineField]
           if (lineId) {
             lineCounts.set(lineId, (lineCounts.get(lineId) || 0) + 1)
@@ -321,7 +321,7 @@ function GameStats() {
         let homeCumulative = 0
         let visitingCumulative = 0
 
-        jams.forEach((jam: any) => {
+        jams.forEach((jam: Record<string, unknown>) => {
           homeCumulative += jam.home_points || 0
           visitingCumulative += jam.visiting_points || 0
 
@@ -418,7 +418,7 @@ function GameStats() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: { parsed: { y: number }; dataIndex: number }) {
             const value = context.parsed.y
             const percentage = totalJams > 0 ? ((value / totalJams) * 100).toFixed(0) : 0
             return `Jams played: ${value}/${totalJams} (${percentage}%)`
@@ -465,7 +465,7 @@ function GameStats() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: { parsed: { y: number }; dataIndex: number }) {
             const dataIndex = context.dataIndex
             const jammer = jammerStats[dataIndex]
             const percentage = Math.round(jammer.lead_percentage)
@@ -479,7 +479,7 @@ function GameStats() {
         beginAtZero: true,
         max: 100,
         ticks: {
-          callback: function(value: any) {
+          callback: function(value: string | number) {
             return value + '%'
           }
         }
@@ -534,7 +534,7 @@ function GameStats() {
       y: {
         beginAtZero: true,
         grid: {
-          color: (context: any) => {
+          color: (context: { tick: { value: number } }) => {
             if (context.tick.value === 0) {
               return 'rgba(0, 0, 0, 0.3)'
             }
@@ -574,7 +574,7 @@ function GameStats() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: { parsed: { y: number }; dataIndex: number }) {
             const value = context.parsed.y
             const percentage = totalJams > 0 ? ((value / totalJams) * 100).toFixed(0) : 0
             return `Jams played: ${value}/${totalJams} (${percentage}%)`
@@ -621,7 +621,7 @@ function GameStats() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: { parsed: { y: number }; dataIndex: number }) {
             const dataIndex = context.dataIndex
             const line = lineStats[dataIndex]
             const percentage = Math.round(line.lead_percentage)
@@ -635,7 +635,7 @@ function GameStats() {
         beginAtZero: true,
         max: 100,
         ticks: {
-          callback: function(value: any) {
+          callback: function(value: string | number) {
             return value + '%'
           }
         }
@@ -690,7 +690,7 @@ function GameStats() {
       y: {
         beginAtZero: true,
         grid: {
-          color: (context: any) => {
+          color: (context: { tick: { value: number } }) => {
             if (context.tick.value === 0) {
               return 'rgba(0, 0, 0, 0.3)'
             }

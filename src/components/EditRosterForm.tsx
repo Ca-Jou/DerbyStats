@@ -30,6 +30,7 @@ function EditRosterForm({ show, roster, teamId, teamName, onClose, onSuccess, on
 
       fetchTeamSkaters()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, roster, teamId])
 
   const fetchTeamSkaters = async () => {
@@ -45,7 +46,7 @@ function EditRosterForm({ show, roster, teamId, teamName, onClose, onSuccess, on
 
       if (error) throw error
 
-      const skaters = data?.map((ts: any) => ({
+      const skaters = data?.map((ts: { skater_id: string; skater: Skater | Skater[] }) => ({
         ...(Array.isArray(ts.skater) ? ts.skater[0] : ts.skater)
       })) || []
 
@@ -156,7 +157,7 @@ function EditRosterForm({ show, roster, teamId, teamName, onClose, onSuccess, on
       // Map the roster to handle array returns
       const mappedRoster: GameRoster = {
         ...updatedRoster,
-        roster_jammers: updatedRoster.roster_jammers?.map((jammer: any) => ({
+        roster_jammers: updatedRoster.roster_jammers?.map((jammer: { id: string; game_roster_id: string; skater_id: string; skater: Skater | Skater[] }) => ({
           ...jammer,
           skater: Array.isArray(jammer.skater) ? jammer.skater[0] : jammer.skater
         })) || []
