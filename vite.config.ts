@@ -8,8 +8,10 @@ export default defineConfig(({ mode }) => {
   // `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '')
 
+  const url = env.VITE_BASE_URL ?? '/'
+
   return {
     plugins: [react()],
-    base: env.VITE_BASE_PATH ? `${env.VITE_BASE_PATH}/` : '/',
+    base: url.endsWith('/') ? url : `${url}/`,
   }
 })

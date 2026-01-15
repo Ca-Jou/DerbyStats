@@ -12,10 +12,11 @@ import Games from './pages/Games'
 import GameDetails from './pages/GameDetails'
 import GameStats from './pages/GameStats'
 import EnterGameStats from './pages/EnterGameStats'
+import {getPath} from "./lib/util";
 
 function App() {
   return (
-    <Router basename={import.meta.env.VITE_BASE_PATH}>
+    <Router basename={getPath(import.meta.env.VITE_BASE_URL ?? '/')}>
       <AuthProvider>
         <div className="App">
           <Navbar />

@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { AuthContextType, AuthProviderProps } from '../types/Auth'
+import {getUrlWithTrailingSlash} from "../lib/util";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -31,11 +32,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => subscription.unsubscribe()
   }, [])
 
+  const url: string =
+    import.meta.env.VITE_BASE_URL ?? // Set this to your site URL in production env.
+    'http://localhost:5173/'
+
   const signInWithEmail = async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin + (import.meta.env.VITE_BASE_PATH || ''),
+        emailRedirectTo: getUrlWithTrailingSlash(url),
       },
     })
     return { error }

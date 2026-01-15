@@ -53,16 +53,17 @@ jobs:
         with:
           node-version: lts/*
           cache: 'npm'
+      - name: Setup Pages
+        id: setup-pages
+        uses: actions/configure-pages@v5
       - name: Install Dependencies
         run: npm ci
       - name: Build React App
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY }}
-          VITE_BASE_PATH: ${{ vars.BASE_PATH }}
+          VITE_BASE_URL: ${{ steps.setup-pages.outputs.base_url }}
         run: npm run build
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
