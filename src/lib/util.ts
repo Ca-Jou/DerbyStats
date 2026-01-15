@@ -6,6 +6,14 @@ export function getUrlWithTrailingSlash(url: string): string {
   return url
 }
 
+export function getUrlWithoutTrailingSlash(url: string): string {
+  // Make sure to include `https://` when not localhost.
+  url = url.startsWith('http') ? url : `https://${url}`
+  // Make sure to remove the trailing `/`.
+  url = url.endsWith('/') ? url.slice(0, -1) : url
+  return url
+}
+
 export function getPath(url: string): string {
   // If it's already just a path (starts with /), return it without trailing slash
   if (url.startsWith('/')) {
