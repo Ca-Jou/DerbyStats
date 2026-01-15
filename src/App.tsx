@@ -15,7 +15,7 @@ import EnterGameStats from './pages/EnterGameStats'
 
 function App() {
   return (
-    <Router>
+    <Router basename="/DerbyStats">
       <AuthProvider>
         <div className="App">
           <Navbar />
