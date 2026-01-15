@@ -35,7 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/${window.location.pathname}`,
+        emailRedirectTo: window.location.origin + (import.meta.env.VITE_BASE_PATH || ''),
       },
     })
     return { error }
