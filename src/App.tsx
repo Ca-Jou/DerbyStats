@@ -15,7 +15,7 @@ import EnterGameStats from './pages/EnterGameStats'
 
 function App() {
   return (
-    <Router basename="/DerbyStats">
+    <Router basename={import.meta.env.VITE_BASE_PATH}>
       <AuthProvider>
         <div className="App">
           <Navbar />
