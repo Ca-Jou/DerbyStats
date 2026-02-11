@@ -233,49 +233,6 @@ function EnterGameStats() {
             </div>
           </div>
 
-          <div className="card mb-4">
-            <div className="card-body">
-              <div className="row">
-                <div className="col-md-6 text-center">
-                  <h5>
-                    {game.home_team_color && (
-                      <span
-                        className="d-inline-block me-2"
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          backgroundColor: game.home_team_color,
-                          border: '1px solid #dee2e6',
-                          borderRadius: '3px',
-                          verticalAlign: 'middle'
-                        }}
-                      ></span>
-                    )}
-                    {game.home_team?.name || 'Home Team'}
-                  </h5>
-                </div>
-                <div className="col-md-6 text-center">
-                  <h5>
-                    {game.visiting_team_color && (
-                      <span
-                        className="d-inline-block me-2"
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          backgroundColor: game.visiting_team_color,
-                          border: '1px solid #dee2e6',
-                          borderRadius: '3px',
-                          verticalAlign: 'middle'
-                        }}
-                      ></span>
-                    )}
-                    {game.visiting_team?.name || 'Visiting Team'}
-                  </h5>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <JamEntryForm
             ref={jamFormRef}
             game={game}

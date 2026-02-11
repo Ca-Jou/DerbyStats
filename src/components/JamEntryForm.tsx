@@ -55,6 +55,8 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
   const [creatingJammer, setCreatingJammer] = useState(false)
   const [localHomeJammers, setLocalHomeJammers] = useState<RosterJammer[]>(homeRoster?.roster_jammers || [])
   const [localVisitingJammers, setLocalVisitingJammers] = useState<RosterJammer[]>(visitingRoster?.roster_jammers || [])
+  const [allJams, setAllJams] = useState<Array<{home_points: number, visiting_points: number, period: number, jam_number: number}>>([])
+
 
   useEffect(() => {
     setLocalHomeJammers(homeRoster?.roster_jammers || [])
@@ -106,6 +108,24 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
     loadJam()
   }, [game.id, period, jamNumber])
 
+  useEffect(() => {
+    async function fetchAllJams() {
+      try {
+        const { data, error } = await supabase
+          .from('jams')
+          .select('home_points, visiting_points, period, jam_number')
+          .eq('game_id', game.id)
+
+        if (error) throw error
+        setAllJams(data || [])
+      } catch (error) {
+        console.error('Error fetching jams:', error)
+      }
+    }
+
+    fetchAllJams()
+  }, [game.id])
+
   const isJamEmpty = () => {
     return (
       !formData.home_jammer_id &&
@@ -116,6 +136,19 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
       formData.visiting_points === 0 &&
       !formData.lead_team
     )
+  }
+
+  const calculateTotalScores = () => {
+    // Sum all saved jams EXCEPT the current jam (to avoid double-counting)
+    const otherJams = allJams.filter(jam => !(jam.period === period && jam.jam_number === jamNumber))
+    const savedHomeTotal = otherJams.reduce((sum, jam) => sum + (jam.home_points || 0), 0)
+    const savedVisitingTotal = otherJams.reduce((sum, jam) => sum + (jam.visiting_points || 0), 0)
+
+    // Add current jam points (from formData)
+    const homeTotal = savedHomeTotal + (formData.home_points || 0)
+    const visitingTotal = savedVisitingTotal + (formData.visiting_points || 0)
+
+    return { homeTotal, visitingTotal }
   }
 
   const saveJam = async () => {
@@ -147,6 +180,16 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
         })
 
       if (error) throw error
+
+      // Refresh jams list after save
+      const { data: updatedJams } = await supabase
+        .from('jams')
+        .select('home_points, visiting_points, period, jam_number')
+        .eq('game_id', game.id)
+
+      if (updatedJams) {
+        setAllJams(updatedJams)
+      }
     } catch (error) {
       console.error('Error saving jam:', error)
       alert('Failed to save jam data')
@@ -287,7 +330,7 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
         </div>
 
         <div className="row">
-          <div className="col-md-6">
+          <div className="col-md-5">
             <h5 className="text-center mb-3">
               {game.home_team_color && (
                 <span
@@ -374,7 +417,13 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
             </div>
           </div>
 
-          <div className="col-md-6">
+          <div className="col-md-2 d-flex align-items-start justify-content-center">
+            <h4 className="mb-3 fw-bold text-primary">
+              {calculateTotalScores().homeTotal} - {calculateTotalScores().visitingTotal}
+            </h4>
+          </div>
+
+          <div className="col-md-5">
             <h5 className="text-center mb-3">
               {game.visiting_team_color && (
                 <span
