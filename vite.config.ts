@@ -13,5 +13,13 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     base: url.endsWith('/') ? url : `${url}/`,
+    server: {
+      // Fallback to index.html for SPA routing in dev mode
+      historyApiFallback: true,
+    },
+    preview: {
+      // Fallback to index.html for SPA routing in preview mode
+      historyApiFallback: true,
+    },
   }
 })
