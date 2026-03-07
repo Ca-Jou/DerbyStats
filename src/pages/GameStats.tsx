@@ -1262,20 +1262,28 @@ function GameStats() {
             <div className="card-body">
               <h5 className="card-title mb-3">Jammer Stats</h5>
               {jammerStats.length > 0 ? (
-                <>
-                  <div style={{ height: '400px' }} className="mb-4">
-                    <Bar data={jammerJamsChartData} options={jammerJamsChartOptions} />
+                <div className="row">
+                  <div className="col-12 col-lg-6 mb-4">
+                    <div style={{ height: '400px' }}>
+                      <Bar data={jammerJamsChartData} options={jammerJamsChartOptions} />
+                    </div>
                   </div>
-                  <div style={{ height: '400px' }} className="mb-4">
-                    <Bar data={jammerLeadPercentageChartData} options={jammerLeadPercentageChartOptions} />
+                  <div className="col-12 col-lg-6 mb-4">
+                    <div style={{ height: '400px' }}>
+                      <Bar data={jammerLeadPercentageChartData} options={jammerLeadPercentageChartOptions} />
+                    </div>
                   </div>
-                  <div style={{ height: '400px' }} className="mb-4">
-                    <Bar data={jammerPointsChartData} options={jammerPointsChartOptions} />
+                  <div className="col-12 col-lg-6 mb-4">
+                    <div style={{ height: '400px' }}>
+                      <Bar data={jammerPointsChartData} options={jammerPointsChartOptions} />
+                    </div>
                   </div>
-                  <div style={{ height: '400px' }} className="mb-4">
-                    <Bar data={jammerAvgPointsChartData} options={jammerAvgPointsChartOptions} />
+                  <div className="col-12 col-lg-6 mb-4">
+                    <div style={{ height: '400px' }}>
+                      <Bar data={jammerAvgPointsChartData} options={jammerAvgPointsChartOptions} />
+                    </div>
                   </div>
-                </>
+                </div>
               ) : (
                 <div className="alert alert-info">
                   No jammer data available for this team.
@@ -1288,20 +1296,28 @@ function GameStats() {
             <div className="card-body">
               <h5 className="card-title mb-3">Blocker Stats</h5>
               {lineStats.length > 0 ? (
-                <>
-                  <div style={{ height: '400px' }} className="mb-4">
-                    <Bar data={blockerJamsChartData} options={blockerJamsChartOptions} />
+                <div className="row">
+                  <div className="col-12 col-lg-6 mb-4">
+                    <div style={{ height: '400px' }}>
+                      <Bar data={blockerJamsChartData} options={blockerJamsChartOptions} />
+                    </div>
                   </div>
-                  <div style={{ height: '400px' }} className="mb-4">
-                    <Bar data={blockerLeadPercentageChartData} options={blockerLeadPercentageChartOptions} />
+                  <div className="col-12 col-lg-6 mb-4">
+                    <div style={{ height: '400px' }}>
+                      <Bar data={blockerLeadPercentageChartData} options={blockerLeadPercentageChartOptions} />
+                    </div>
                   </div>
-                  <div style={{ height: '400px' }} className="mb-4">
-                    <Bar data={blockerPointsChartData} options={blockerPointsChartOptions} />
+                  <div className="col-12 col-lg-6 mb-4">
+                    <div style={{ height: '400px' }}>
+                      <Bar data={blockerPointsChartData} options={blockerPointsChartOptions} />
+                    </div>
                   </div>
-                  <div style={{ height: '400px' }} className="mb-4">
-                    <Bar data={blockerAvgPointsChartData} options={blockerAvgPointsChartOptions} />
+                  <div className="col-12 col-lg-6 mb-4">
+                    <div style={{ height: '400px' }}>
+                      <Bar data={blockerAvgPointsChartData} options={blockerAvgPointsChartOptions} />
+                    </div>
                   </div>
-                </>
+                </div>
               ) : (
                 <div className="alert alert-info">
                   No blocker data available for this team.
