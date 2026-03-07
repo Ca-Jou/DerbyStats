@@ -25,6 +25,7 @@ function Games() {
         visiting_team_color,
         start_date,
         location,
+        locked,
         home_team:teams!games_home_team_id_fkey(id, name, city, country),
         visiting_team:teams!games_visiting_team_id_fkey(id, name, city, country)
       `)
@@ -56,6 +57,7 @@ function Games() {
             visiting_team_color,
             start_date,
             location,
+            locked,
             home_team:teams!games_home_team_id_fkey(id, name, city, country),
             visiting_team:teams!games_visiting_team_id_fkey(id, name, city, country)
           `)
@@ -190,24 +192,30 @@ function Games() {
                       >
                         <i className="bi bi-eye-fill"></i>
                       </button>
-                      <button
-                        className="btn btn-outline-primary btn-sm me-2"
-                        onClick={() => setEditingGame(game)}
-                      >
-                        <i className="bi bi-pencil-fill"></i>
-                      </button>
-                      <DeleteButton
-                        entityType={'games'}
-                        id={game.id}
-                        onSuccess={() => {
-                          setGames(games.filter(g => g.id !== game.id))
-                        }}
-                        onError={(error) => {
-                          setError(error.message)
-                        }}
-                        confirmMessage="Are you sure you want to delete this game? This action cannot be undone!"
-                        size="sm"
-                      />
+                      {game.locked ? (
+                        <i className="bi bi-lock-fill text-secondary"></i>
+                      ) : (
+                        <>
+                          <button
+                            className="btn btn-outline-primary btn-sm me-2"
+                            onClick={() => setEditingGame(game)}
+                          >
+                            <i className="bi bi-pencil-fill"></i>
+                          </button>
+                          <DeleteButton
+                            entityType={'games'}
+                            id={game.id}
+                            onSuccess={() => {
+                              setGames(games.filter(g => g.id !== game.id))
+                            }}
+                            onError={(error) => {
+                              setError(error.message)
+                            }}
+                            confirmMessage="Are you sure you want to delete this game? This action cannot be undone!"
+                            size="sm"
+                          />
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}

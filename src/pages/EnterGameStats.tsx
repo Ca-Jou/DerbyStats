@@ -34,6 +34,7 @@ function EnterGameStats() {
             visiting_team_color,
             start_date,
             location,
+            locked,
             home_team:teams!games_home_team_id_fkey(id, name, city, country),
             visiting_team:teams!games_visiting_team_id_fkey(id, name, city, country)
           `)
@@ -207,6 +208,21 @@ function EnterGameStats() {
         </div>
         <button className="btn btn-outline-info" onClick={() => navigate('/games')}>
           Back to Games
+        </button>
+      </div>
+    )
+  }
+
+  if (game.locked) {
+    return (
+      <div className="container mt-4">
+        <div className="alert alert-info d-flex align-items-center" role="alert">
+          <i className="bi bi-lock-fill me-2"></i>
+          This game is locked. Unlock it from the Game Details page to enter stats.
+        </div>
+        <button className="btn btn-outline-info" onClick={() => navigate(`/games/${id}`)}>
+          <i className="bi bi-arrow-left me-2"></i>
+          Back to Game Details
         </button>
       </div>
     )

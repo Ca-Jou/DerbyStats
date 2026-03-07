@@ -23,6 +23,7 @@ export interface Game {
   visiting_team_color: string | null
   start_date: string | null
   location: string | null
+  locked: boolean
   home_team?: Team
   visiting_team?: Team
 }

@@ -23,6 +23,40 @@ function GameDetails() {
   const [showEditVisitingRoster, setShowEditVisitingRoster] = useState(false)
   const [showDeleteRosterConfirm, setShowDeleteRosterConfirm] = useState(false)
   const [rosterToDelete, setRosterToDelete] = useState<{ id: string, teamName: string } | null>(null)
+  const [showSwapConfirm, setShowSwapConfirm] = useState(false)
+  const [showUnlockConfirm, setShowUnlockConfirm] = useState(false)
+  const [swapping, setSwapping] = useState(false)
+
+  const handleSwapTeams = async () => {
+    if (!game) return
+    setSwapping(true)
+    try {
+      const { error } = await supabase.rpc('swap_game_teams', { p_game_id: game.id })
+      if (error) throw error
+      setShowSwapConfirm(false)
+      window.location.reload()
+    } catch (error) {
+      console.error('Error swapping teams:', error)
+      setError(error instanceof Error ? error.message : 'Failed to swap teams')
+      setSwapping(false)
+    }
+  }
+
+  const handleToggleLock = async (lock: boolean) => {
+    if (!game) return
+    try {
+      const { error } = await supabase
+        .from('games')
+        .update({ locked: lock })
+        .eq('id', game.id)
+      if (error) throw error
+      setGame({ ...game, locked: lock })
+      setShowUnlockConfirm(false)
+    } catch (error) {
+      console.error('Error toggling lock:', error)
+      setError(error instanceof Error ? error.message : 'Failed to toggle lock')
+    }
+  }
 
   const fetchRosters = async (gameId: string, homeTeamId: string, visitingTeamId: string) => {
     try {
@@ -102,6 +136,7 @@ function GameDetails() {
             visiting_team_color,
             start_date,
             location,
+            locked,
             home_team:teams!games_home_team_id_fkey(id, name, city, country, light_color, dark_color),
             visiting_team:teams!games_visiting_team_id_fkey(id, name, city, country, light_color, dark_color)
           `)
@@ -207,23 +242,62 @@ function GameDetails() {
                 <i className="bi bi-arrow-left me-2"></i>
                 Back
               </button>
-              <button className="btn btn-outline-primary me-2" onClick={() => navigate(`/games/${game.id}/enter-stats`)}>
-                <i className="bi bi-clipboard-data me-2"></i>
-                Enter Stats
-              </button>
-              <button className="btn btn-outline-primary me-2" onClick={() => setShowEditModal(true)}>
-                <i className="bi bi-pencil-fill me-2"></i>
-                Edit
-              </button>
-              <DeleteButton
-                entityType="games"
-                id={game.id}
-                onSuccess={() => navigate('/games')}
-                onError={(error) => setError(error.message)}
-                confirmMessage="Are you sure you want to delete this game? This action cannot be undone!"
-              />
+              {game.locked ? (
+                <button
+                  className="btn btn-outline-danger ms-2"
+                  onClick={() => setShowUnlockConfirm(true)}
+                >
+                  <i className="bi bi-lock-fill me-2"></i>
+                  Unlock
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="btn btn-outline-primary me-2"
+                    onClick={() => navigate(`/games/${game.id}/enter-stats`)}
+                  >
+                    <i className="bi bi-clipboard-data me-2"></i>
+                    Enter Stats
+                  </button>
+                  <button
+                    className="btn btn-outline-primary me-2"
+                    onClick={() => setShowSwapConfirm(true)}
+                  >
+                    <i className="bi bi-arrow-left-right me-2"></i>
+                    Swap Teams
+                  </button>
+                  <button
+                    className="btn btn-outline-primary me-2"
+                    onClick={() => setShowEditModal(true)}
+                  >
+                    <i className="bi bi-pencil-fill me-2"></i>
+                    Edit
+                  </button>
+                  <DeleteButton
+                    entityType="games"
+                    id={game.id}
+                    onSuccess={() => navigate('/games')}
+                    onError={(error) => setError(error.message)}
+                    confirmMessage="Are you sure you want to delete this game? This action cannot be undone!"
+                  />
+                  <button
+                    className="btn btn-outline-success ms-2"
+                    onClick={() => handleToggleLock(true)}
+                  >
+                    <i className="bi bi-unlock-fill me-2"></i>
+                    Lock
+                  </button>
+                </>
+              )}
             </div>
           </div>
+
+          {game.locked && (
+            <div className="alert alert-info d-flex align-items-center" role="alert">
+              <i className="bi bi-lock-fill me-2"></i>
+              This game is locked. Unlock it to make changes.
+            </div>
+          )}
 
           <div className="card mb-3">
             <div className="card-body">
@@ -275,15 +349,17 @@ function GameDetails() {
                   <hr />
 
                   {!homeRoster ? (
-                    <div className="text-center">
-                      <button
-                        className="btn btn-outline-primary"
-                        onClick={() => setShowCreateHomeRoster(true)}
-                      >
-                        <i className="bi bi-plus-circle me-2"></i>
-                        Create Roster
-                      </button>
-                    </div>
+                    !game.locked && (
+                      <div className="text-center">
+                        <button
+                          className="btn btn-outline-primary"
+                          onClick={() => setShowCreateHomeRoster(true)}
+                        >
+                          <i className="bi bi-plus-circle me-2"></i>
+                          Create Roster
+                        </button>
+                      </div>
+                    )
                   ) : (
                     <>
                       <h6 className="text-center mb-3">Roster</h6>
@@ -312,28 +388,30 @@ function GameDetails() {
                         </div>
                       )}
 
-                      <div className="d-flex justify-content-center gap-2 mt-3">
-                        <button
-                          className="btn btn-outline-primary btn-sm"
-                          onClick={() => setShowEditHomeRoster(true)}
-                        >
-                          <i className="bi bi-pencil-fill me-1"></i>
-                          Edit
-                        </button>
-                        <button
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => {
-                            setRosterToDelete({
-                              id: homeRoster.id,
-                              teamName: game.home_team?.name || 'Our Team'
-                            })
-                            setShowDeleteRosterConfirm(true)
-                          }}
-                        >
-                          <i className="bi bi-trash-fill me-1"></i>
-                          Delete
-                        </button>
-                      </div>
+                      {!game.locked && (
+                        <div className="d-flex justify-content-center gap-2 mt-3">
+                          <button
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => setShowEditHomeRoster(true)}
+                          >
+                            <i className="bi bi-pencil-fill me-1"></i>
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() => {
+                              setRosterToDelete({
+                                id: homeRoster.id,
+                                teamName: game.home_team?.name || 'Our Team'
+                              })
+                              setShowDeleteRosterConfirm(true)
+                            }}
+                          >
+                            <i className="bi bi-trash-fill me-1"></i>
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -366,15 +444,17 @@ function GameDetails() {
                   <hr />
 
                   {!visitingRoster ? (
-                    <div className="text-center">
-                      <button
-                        className="btn btn-outline-primary"
-                        onClick={() => setShowCreateVisitingRoster(true)}
-                      >
-                        <i className="bi bi-plus-circle me-2"></i>
-                        Create Roster
-                      </button>
-                    </div>
+                    !game.locked && (
+                      <div className="text-center">
+                        <button
+                          className="btn btn-outline-primary"
+                          onClick={() => setShowCreateVisitingRoster(true)}
+                        >
+                          <i className="bi bi-plus-circle me-2"></i>
+                          Create Roster
+                        </button>
+                      </div>
+                    )
                   ) : (
                     <>
                       <h6 className="text-center mb-3">Roster</h6>
@@ -403,28 +483,30 @@ function GameDetails() {
                         </div>
                       )}
 
-                      <div className="d-flex justify-content-center gap-2 mt-3">
-                        <button
-                          className="btn btn-outline-primary btn-sm"
-                          onClick={() => setShowEditVisitingRoster(true)}
-                        >
-                          <i className="bi bi-pencil-fill me-1"></i>
-                          Edit
-                        </button>
-                        <button
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => {
-                            setRosterToDelete({
-                              id: visitingRoster.id,
-                              teamName: game.visiting_team?.name || 'Opposing Team'
-                            })
-                            setShowDeleteRosterConfirm(true)
-                          }}
-                        >
-                          <i className="bi bi-trash-fill me-1"></i>
-                          Delete
-                        </button>
-                      </div>
+                      {!game.locked && (
+                        <div className="d-flex justify-content-center gap-2 mt-3">
+                          <button
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => setShowEditVisitingRoster(true)}
+                          >
+                            <i className="bi bi-pencil-fill me-1"></i>
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() => {
+                              setRosterToDelete({
+                                id: visitingRoster.id,
+                                teamName: game.visiting_team?.name || 'Opposing Team'
+                              })
+                              setShowDeleteRosterConfirm(true)
+                            }}
+                          >
+                            <i className="bi bi-trash-fill me-1"></i>
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -437,6 +519,7 @@ function GameDetails() {
       <EditGameForm
         show={showEditModal}
         game={game}
+        hasJams={hasJams}
         onClose={() => setShowEditModal(false)}
         onSuccess={(updatedGame) => {
           setGame(updatedGame)
@@ -566,6 +649,89 @@ function GameDetails() {
           setShowCreateVisitingRoster(false)
         }}
       />
+
+      {/* Swap Teams Confirmation Modal */}
+      {showSwapConfirm && (
+        <>
+          <div className="modal show d-block" tabIndex={-1}>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Swap Teams</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowSwapConfirm(false)}
+                    disabled={swapping}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>This will swap Our Team and Opposing Team (including all jam data). Continue?</p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-outline-info"
+                    onClick={() => setShowSwapConfirm(false)}
+                    disabled={swapping}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleSwapTeams}
+                    disabled={swapping}
+                  >
+                    {swapping ? 'Swapping...' : 'Swap Teams'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop show"></div>
+        </>
+      )}
+
+      {/* Unlock Confirmation Modal */}
+      {showUnlockConfirm && (
+        <>
+          <div className="modal show d-block" tabIndex={-1}>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Unlock Game</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowUnlockConfirm(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>Are you sure you want to unlock this game? This will allow editing teams, stats, and rosters.</p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-outline-info"
+                    onClick={() => setShowUnlockConfirm(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-warning"
+                    onClick={() => handleToggleLock(false)}
+                  >
+                    Unlock
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop show"></div>
+        </>
+      )}
 
       {visitingRoster && (
         <EditRosterForm

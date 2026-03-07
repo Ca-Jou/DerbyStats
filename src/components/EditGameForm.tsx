@@ -5,12 +5,13 @@ import { Game, Team } from '../types/Skater'
 interface EditGameFormProps {
   show: boolean
   game: Game
+  hasJams?: boolean
   onClose: () => void
   onSuccess: (game: Game) => void
   onError: (error: Error) => void
 }
 
-function EditGameForm({ show, game, onClose, onSuccess, onError }: EditGameFormProps) {
+function EditGameForm({ show, game, hasJams, onClose, onSuccess, onError }: EditGameFormProps) {
   const [formData, setFormData] = useState({
     home_team_id: '',
     home_team_color: '',
@@ -153,6 +154,12 @@ function EditGameForm({ show, game, onClose, onSuccess, onError }: EditGameFormP
             </div>
             <form onSubmit={handleSubmit}>
               <div className="modal-body">
+                {hasJams && (
+                  <div className="alert alert-danger text-center" role="alert">
+                    <i className="bi bi-exclamation-triangle-fill d-block mb-2 fs-4"></i>
+                    <strong>This game already has stats.</strong> Changing teams will permanently misattribute all existing jam data. Use <strong>Swap Teams</strong> instead if you need to switch Our Team and Opposing Team.
+                  </div>
+                )}
                 <div className="mb-3" ref={homeDropdownRef}>
                   <label htmlFor="edit-home_team_search" className="form-label">
                     Our Team

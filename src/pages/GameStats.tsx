@@ -221,6 +221,7 @@ function GameStats() {
             visiting_team_color,
             start_date,
             location,
+            locked,
             home_team:teams!games_home_team_id_fkey(id, name, city, country),
             visiting_team:teams!games_visiting_team_id_fkey(id, name, city, country)
           `)
@@ -1178,13 +1179,15 @@ function GameStats() {
                 <i className="bi bi-arrow-left me-2"></i>
                 Back to Game Details
               </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => navigate(`/games/${game.id}/enter-stats`)}
-              >
-                <i className="bi bi-pencil me-2"></i>
-                Enter Stats
-              </button>
+              {!game.locked && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate(`/games/${game.id}/enter-stats`)}
+                >
+                  <i className="bi bi-pencil me-2"></i>
+                  Enter Stats
+                </button>
+              )}
             </div>
           </div>
 

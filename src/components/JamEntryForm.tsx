@@ -152,6 +152,9 @@ const JamEntryForm = forwardRef<JamEntryFormRef, JamEntryFormProps>(({
   }
 
   const saveJam = async () => {
+    // Don't save if the game is locked
+    if (game.locked) return
+
     // Don't save if the jam is empty
     if (isJamEmpty()) {
       return
