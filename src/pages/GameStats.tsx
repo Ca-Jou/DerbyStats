@@ -4,25 +4,29 @@ import { supabase } from '../lib/supabase'
 import { Game } from '../types/Skater'
 import {
   Chart as ChartJS,
+  BubbleController,
   CategoryScale,
   LinearScale,
   BarElement,
   LineElement,
   PointElement,
   Title,
+  SubTitle,
   Tooltip,
   Legend
 } from 'chart.js'
-import { Bar, Line } from 'react-chartjs-2'
+import { Bar, Bubble, Line } from 'react-chartjs-2'
 import colors from '../assets/scss/colors.module.scss'
 
 ChartJS.register(
+  BubbleController,
   CategoryScale,
   LinearScale,
   BarElement,
   LineElement,
   PointElement,
   Title,
+  SubTitle,
   Tooltip,
   Legend
 )
@@ -48,13 +52,150 @@ interface LineStats {
   points_against: number
 }
 
+interface MatchupCell {
+  jamCount: number
+  totalScoreDiff: number
+}
+
+interface MatchupData {
+  homeJammers: { id: string; label: string }[]
+  visitingJammers: { id: string; label: string }[]
+  homeLines: { id: string; label: string }[]
+  visitingLines: { id: string; label: string }[]
+  homeJammerVsHomeLine: Map<string, MatchupCell>
+  homeJammerVsVisitingJammer: Map<string, MatchupCell>
+  homeJammerVsVisitingLine: Map<string, MatchupCell>
+  visitingJammerVsHomeLine: Map<string, MatchupCell>
+  visitingLineVsHomeLine: Map<string, MatchupCell>
+}
+
+// #60a7a9 (prd-green/success)
+const GREEN_RGB = '96, 167, 169'
+// #d55c41 (prd-red/danger)
+const RED_RGB = '213, 92, 65'
+
+function scoreDiffToColor(avgDiff: number): string {
+  const maxDiff = 5
+  const normalized = Math.min(Math.abs(avgDiff), maxDiff) / maxDiff
+  const alpha = 0.2 + normalized * 0.7
+  if (avgDiff >= 0) {
+    return `rgba(${GREEN_RGB}, ${alpha})`
+  } else {
+    return `rgba(${RED_RGB}, ${alpha})`
+  }
+}
+
+function scaleBubbleRadius(jamCount: number, maxJamCount: number): number {
+  const minR = 6
+  const maxR = 25
+  if (maxJamCount <= 0) return minR
+  return minR + (jamCount / maxJamCount) * (maxR - minR)
+}
+
+function buildBubbleChart(
+  title: string,
+  subtitle: string,
+  yEntities: { id: string; label: string }[],
+  xEntities: { id: string; label: string }[],
+  matrix: Map<string, MatchupCell>,
+  useWith: boolean = false
+) {
+  let maxJamCount = 0
+  matrix.forEach(cell => { if (cell.jamCount > maxJamCount) maxJamCount = cell.jamCount })
+
+  const dataPoints: { x: number; y: number; r: number }[] = []
+  const backgroundColors: string[] = []
+  const borderColors: string[] = []
+  const tooltipData: { yLabel: string; xLabel: string; avgDiff: number; jamCount: number }[] = []
+
+  for (let yIdx = 0; yIdx < yEntities.length; yIdx++) {
+    for (let xIdx = 0; xIdx < xEntities.length; xIdx++) {
+      const key = `${yIdx}-${xIdx}`
+      const cell = matrix.get(key)
+      if (!cell || cell.jamCount === 0) continue
+
+      const avgDiff = cell.totalScoreDiff / cell.jamCount
+
+      dataPoints.push({ x: xIdx, y: yIdx, r: scaleBubbleRadius(cell.jamCount, maxJamCount) })
+      backgroundColors.push(scoreDiffToColor(avgDiff))
+      borderColors.push(avgDiff >= 0 ? `rgba(${GREEN_RGB}, 1)` : `rgba(${RED_RGB}, 1)`)
+      tooltipData.push({
+        yLabel: yEntities[yIdx].label,
+        xLabel: xEntities[xIdx].label,
+        avgDiff: +avgDiff.toFixed(2),
+        jamCount: cell.jamCount
+      })
+    }
+  }
+
+  const data = {
+    datasets: [{
+      label: title,
+      data: dataPoints,
+      backgroundColor: backgroundColors,
+      borderColor: borderColors,
+      borderWidth: 1
+    }]
+  }
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      title: { display: true, text: title, font: { size: 18 } },
+      subtitle: { display: true, text: subtitle, font: { size: 13 }, padding: { bottom: 16 } },
+      tooltip: {
+        callbacks: {
+          label: (context: { dataIndex: number }) => {
+            const td = tooltipData[context.dataIndex]
+            return [
+              `${td.yLabel} ${useWith ? 'with' : 'vs'} ${td.xLabel}`,
+              `Avg score diff: ${td.avgDiff > 0 ? '+' : ''}${td.avgDiff} (${td.jamCount} jams)`
+            ]
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        type: 'linear' as const,
+        min: -0.5,
+        max: xEntities.length - 0.5,
+        afterBuildTicks: (axis: { ticks: { value: number }[] }) => {
+          axis.ticks = xEntities.map((_, i) => ({ value: i }))
+        },
+        ticks: {
+          callback: (value: number | string) => xEntities[value as number]?.label || ''
+        },
+        grid: { color: 'rgba(0, 0, 0, 0.1)' }
+      },
+      y: {
+        type: 'linear' as const,
+        min: -0.5,
+        max: yEntities.length - 0.5,
+        afterBuildTicks: (axis: { ticks: { value: number }[] }) => {
+          axis.ticks = yEntities.map((_, i) => ({ value: i }))
+        },
+        ticks: {
+          callback: (value: number | string) => yEntities[value as number]?.label || ''
+        },
+        grid: { color: 'rgba(0, 0, 0, 0.1)' }
+      }
+    }
+  }
+
+  return { title, subtitle, data, options, empty: yEntities.length === 0 || xEntities.length === 0 }
+}
+
 function GameStats() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [game, setGame] = useState<Game | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedTeam, setSelectedTeam] = useState<'home' | 'visiting'>('home')
+  const [selectedView, setSelectedView] = useState<'home' | 'visiting' | 'matchups'>('home')
+  const [matchupData, setMatchupData] = useState<MatchupData | null>(null)
   const [selectedPeriod, setSelectedPeriod] = useState<'all' | 1 | 2>('all')
   const [jammerStats, setJammerStats] = useState<JammerStats[]>([])
   const [lineStats, setLineStats] = useState<LineStats[]>([])
@@ -110,13 +251,13 @@ function GameStats() {
 
   useEffect(() => {
     async function fetchJammerStats() {
-      if (!game) return
+      if (!game || selectedView === 'matchups') return
 
       try {
-        const jammerField = selectedTeam === 'home' ? 'home_jammer_id' : 'visiting_jammer_id'
-        const leadTeamValue = selectedTeam
-        const pointsForField = selectedTeam === 'home' ? 'home_points' : 'visiting_points'
-        const pointsAgainstField = selectedTeam === 'home' ? 'visiting_points' : 'home_points'
+        const jammerField = selectedView === 'home' ? 'home_jammer_id' : 'visiting_jammer_id'
+        const leadTeamValue = selectedView
+        const pointsForField = selectedView === 'home' ? 'home_points' : 'visiting_points'
+        const pointsAgainstField = selectedView === 'home' ? 'visiting_points' : 'home_points'
 
         let query = supabase
           .from('jams')
@@ -198,17 +339,17 @@ function GameStats() {
     }
 
     fetchJammerStats()
-  }, [game, selectedTeam, selectedPeriod])
+  }, [game, selectedView, selectedPeriod])
 
   useEffect(() => {
     async function fetchLineStats() {
-      if (!game) return
+      if (!game || selectedView === 'matchups') return
 
       try {
-        const lineField = selectedTeam === 'home' ? 'home_line_id' : 'visiting_line_id'
-        const leadTeamValue = selectedTeam
-        const pointsForField = selectedTeam === 'home' ? 'home_points' : 'visiting_points'
-        const pointsAgainstField = selectedTeam === 'home' ? 'visiting_points' : 'home_points'
+        const lineField = selectedView === 'home' ? 'home_line_id' : 'visiting_line_id'
+        const leadTeamValue = selectedView
+        const pointsForField = selectedView === 'home' ? 'home_points' : 'visiting_points'
+        const pointsAgainstField = selectedView === 'home' ? 'visiting_points' : 'home_points'
 
         let query = supabase
           .from('jams')
@@ -287,7 +428,7 @@ function GameStats() {
     }
 
     fetchLineStats()
-  }, [game, selectedTeam, selectedPeriod])
+  }, [game, selectedView, selectedPeriod])
 
   useEffect(() => {
     async function fetchScoreEvolution() {
@@ -343,21 +484,160 @@ function GameStats() {
     fetchScoreEvolution()
   }, [game, selectedPeriod])
 
+  useEffect(() => {
+    async function fetchMatchupData() {
+      if (!game || selectedView !== 'matchups') return
+
+      try {
+        let query = supabase
+          .from('jams')
+          .select('home_jammer_id, home_line_id, home_points, visiting_jammer_id, visiting_line_id, visiting_points')
+          .eq('game_id', game.id)
+
+        if (selectedPeriod !== 'all') {
+          query = query.eq('period', selectedPeriod)
+        }
+
+        const { data: jams, error } = await query
+        if (error) throw error
+        if (!jams || jams.length === 0) {
+          setMatchupData(null)
+          return
+        }
+
+        const homeJammerIds = new Set<string>()
+        const visitingJammerIds = new Set<string>()
+        const homeLineIds = new Set<string>()
+        const visitingLineIds = new Set<string>()
+
+        jams.forEach((jam) => {
+          if (jam.home_jammer_id) homeJammerIds.add(jam.home_jammer_id)
+          if (jam.visiting_jammer_id) visitingJammerIds.add(jam.visiting_jammer_id)
+          if (jam.home_line_id) homeLineIds.add(jam.home_line_id)
+          if (jam.visiting_line_id) visitingLineIds.add(jam.visiting_line_id)
+        })
+
+        const [homeJammersRes, visitingJammersRes, homeLinesRes, visitingLinesRes] = await Promise.all([
+          homeJammerIds.size > 0
+            ? supabase.from('skaters').select('id, number, name').in('id', [...homeJammerIds])
+            : { data: [], error: null },
+          visitingJammerIds.size > 0
+            ? supabase.from('skaters').select('id, number, name').in('id', [...visitingJammerIds])
+            : { data: [], error: null },
+          homeLineIds.size > 0
+            ? supabase.from('roster_lines').select('id, name').in('id', [...homeLineIds])
+            : { data: [], error: null },
+          visitingLineIds.size > 0
+            ? supabase.from('roster_lines').select('id, name').in('id', [...visitingLineIds])
+            : { data: [], error: null },
+        ])
+
+        const homeJammers = (homeJammersRes.data || [])
+          .map((s) => ({ id: s.id, label: `#${s.number} ${s.name}` }))
+          .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }))
+        const visitingJammers = (visitingJammersRes.data || [])
+          .map((s) => ({ id: s.id, label: `#${s.number} ${s.name}` }))
+          .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }))
+        const homeLines = (homeLinesRes.data || [])
+          .map((l) => ({ id: l.id, label: l.name }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+        const visitingLines = (visitingLinesRes.data || [])
+          .map((l) => ({ id: l.id, label: l.name }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+
+        const homeJammerIdx = new Map(homeJammers.map((e, i) => [e.id, i]))
+        const visitingJammerIdx = new Map(visitingJammers.map((e, i) => [e.id, i]))
+        const homeLineIdx = new Map(homeLines.map((e, i) => [e.id, i]))
+        const visitingLineIdx = new Map(visitingLines.map((e, i) => [e.id, i]))
+
+        const homeJammerVsHomeLine = new Map<string, MatchupCell>()
+        const homeJammerVsVisitingJammer = new Map<string, MatchupCell>()
+        const homeJammerVsVisitingLine = new Map<string, MatchupCell>()
+        const visitingJammerVsHomeLine = new Map<string, MatchupCell>()
+        const visitingLineVsHomeLine = new Map<string, MatchupCell>()
+
+        const addToMatrix = (matrix: Map<string, MatchupCell>, yIdx: number | undefined, xIdx: number | undefined, scoreDiff: number) => {
+          if (yIdx === undefined || xIdx === undefined) return
+          const key = `${yIdx}-${xIdx}`
+          const cell = matrix.get(key) || { jamCount: 0, totalScoreDiff: 0 }
+          cell.jamCount++
+          cell.totalScoreDiff += scoreDiff
+          matrix.set(key, cell)
+        }
+
+        jams.forEach((jam) => {
+          const scoreDiff = (jam.home_points || 0) - (jam.visiting_points || 0)
+          const hjIdx = jam.home_jammer_id ? homeJammerIdx.get(jam.home_jammer_id) : undefined
+          const vjIdx = jam.visiting_jammer_id ? visitingJammerIdx.get(jam.visiting_jammer_id) : undefined
+          const hlIdx = jam.home_line_id ? homeLineIdx.get(jam.home_line_id) : undefined
+          const vlIdx = jam.visiting_line_id ? visitingLineIdx.get(jam.visiting_line_id) : undefined
+
+          addToMatrix(homeJammerVsHomeLine, hjIdx, hlIdx, scoreDiff)
+          addToMatrix(homeJammerVsVisitingJammer, hjIdx, vjIdx, scoreDiff)
+          addToMatrix(homeJammerVsVisitingLine, hjIdx, vlIdx, scoreDiff)
+          addToMatrix(visitingJammerVsHomeLine, hlIdx, vjIdx, scoreDiff)
+          addToMatrix(visitingLineVsHomeLine, hlIdx, vlIdx, scoreDiff)
+        })
+
+        setMatchupData({
+          homeJammers, visitingJammers, homeLines, visitingLines,
+          homeJammerVsHomeLine, homeJammerVsVisitingJammer, homeJammerVsVisitingLine,
+          visitingJammerVsHomeLine, visitingLineVsHomeLine
+        })
+      } catch (error) {
+        console.error('Error fetching matchup data:', error)
+      }
+    }
+
+    fetchMatchupData()
+  }, [game, selectedPeriod, selectedView])
+
+  const homeName = game?.home_team?.name || 'Home'
+  const visitingName = game?.visiting_team?.name || 'Visiting'
+
+  const matchupCharts = matchupData ? [
+    buildBubbleChart(
+      `${homeName} Jammers with ${homeName} Lines`,
+      `Average score diff per jam for ${homeName} jammers with ${homeName} lines.`,
+      matchupData.homeJammers, matchupData.homeLines, matchupData.homeJammerVsHomeLine, true
+    ),
+    buildBubbleChart(
+      `${homeName} Jammers vs ${visitingName} Jammers`,
+      `Average score diff per jam for ${homeName} jammers against ${visitingName} jammers.`,
+      matchupData.homeJammers, matchupData.visitingJammers, matchupData.homeJammerVsVisitingJammer
+    ),
+    buildBubbleChart(
+      `${homeName} Jammers vs ${visitingName} Lines`,
+      `Average score diff per jam for ${homeName} jammers against ${visitingName} lines.`,
+      matchupData.homeJammers, matchupData.visitingLines, matchupData.homeJammerVsVisitingLine
+    ),
+    buildBubbleChart(
+      `${homeName} Lines vs ${visitingName} Jammers`,
+      `Average score diff per jam for ${homeName} lines against ${visitingName} jammers.`,
+      matchupData.homeLines, matchupData.visitingJammers, matchupData.visitingJammerVsHomeLine
+    ),
+    buildBubbleChart(
+      `${homeName} Lines vs ${visitingName} Lines`,
+      `Average score diff per jam for ${homeName} lines against ${visitingName} lines.`,
+      matchupData.homeLines, matchupData.visitingLines, matchupData.visitingLineVsHomeLine
+    ),
+  ] : []
+
   const teamScoreEvolutionChartData = {
     labels: scoreEvolution.labels,
     datasets: [
       {
         label: game?.home_team?.name || 'Home Team',
         data: scoreEvolution.homeScores,
-        borderColor: selectedTeam === 'home' ? colors.primary : colors.info,
-        backgroundColor: selectedTeam === 'home' ? colors.primary : colors.info,
+        borderColor: selectedView === 'home' ? colors.primary : colors.info,
+        backgroundColor: selectedView === 'home' ? colors.primary : colors.info,
         tension: 0.1
       },
       {
         label: game?.visiting_team?.name || 'Visiting Team',
         data: scoreEvolution.visitingScores,
-        borderColor: selectedTeam === 'visiting' ? colors.primary : colors.info,
-        backgroundColor: selectedTeam === 'visiting' ? colors.primary : colors.info,
+        borderColor: selectedView === 'visiting' ? colors.primary : colors.info,
+        backgroundColor: selectedView === 'visiting' ? colors.primary : colors.info,
         tension: 0.1
       }
     ]
@@ -937,23 +1217,32 @@ function GameStats() {
                 <div className="btn-group" role="group">
                   <button
                     type="button"
-                    className={`btn ${selectedTeam === 'home' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setSelectedTeam('home')}
+                    className={`btn ${selectedView === 'home' ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => setSelectedView('home')}
                   >
                     {game.home_team?.name || 'Home Team'}
                   </button>
                   <button
                     type="button"
-                    className={`btn ${selectedTeam === 'visiting' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setSelectedTeam('visiting')}
+                    className={`btn ${selectedView === 'visiting' ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => setSelectedView('visiting')}
                   >
                     {game.visiting_team?.name || 'Visiting Team'}
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn ${selectedView === 'matchups' ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => setSelectedView('matchups')}
+                  >
+                    Matchups
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
+          {selectedView !== 'matchups' && (
+          <>
           <div className="card mb-4">
             <div className="card-body">
               <h5 className="card-title mb-3">Team Stats</h5>
@@ -1020,6 +1309,39 @@ function GameStats() {
               )}
             </div>
           </div>
+          </>
+          )}
+
+          {selectedView === 'matchups' && (
+            <div className="card mb-4">
+              <div className="card-body">
+                <h5 className="card-title mb-1">Matchups</h5>
+                <p className="text-muted small mb-4">
+                  The bubble size reflects the number of jams played with this combination. The bubble color reflects the score differential.
+                </p>
+                {matchupCharts.length > 0 ? (
+                  matchupCharts.map((chart, idx) =>
+                    chart.empty ? (
+                      <div key={idx} className="mb-4">
+                        <h6>{chart.title}</h6>
+                        <div className="alert alert-info">
+                          No data available — no jammers or lines recorded for this matchup.
+                        </div>
+                      </div>
+                    ) : (
+                      <div key={idx} style={{ height: '400px' }} className="mb-4">
+                        <Bubble data={chart.data} options={chart.options} />
+                      </div>
+                    )
+                  )
+                ) : (
+                  <div className="alert alert-info">
+                    No matchup data available for this period.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
