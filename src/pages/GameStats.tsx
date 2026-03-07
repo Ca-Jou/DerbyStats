@@ -505,7 +505,7 @@ function GameStats() {
         borderWidth: 1
       },
       {
-        label: 'Total Score',
+        label: 'Score Diff',
         data: jammerStats.map((j) => j.points_for - j.points_against),
         backgroundColor: colors.warning,
         borderColor: colors.warning,
@@ -527,6 +527,80 @@ function GameStats() {
         text: 'Points For and Against',
         font: {
           size: 18
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: { dataset: { label?: string }; raw: unknown; dataIndex: number }) => {
+            const jamCount = jammerStats[context.dataIndex]?.jam_count ?? 0
+            return `${context.dataset.label}: ${context.raw} (${jamCount} jams played)`
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: (context: { tick: { value: number } }) => {
+            if (context.tick.value === 0) {
+              return 'rgba(0, 0, 0, 0.3)'
+            }
+            return 'rgba(0, 0, 0, 0.1)'
+          }
+        }
+      }
+    }
+  }
+
+  const jammerAvgPointsChartData = {
+    labels: jammerStats.map((j) => `#${j.skater_number} ${j.skater_name}`),
+    datasets: [
+      {
+        label: 'Avg Points For',
+        data: jammerStats.map((j) => j.jam_count > 0 ? +(j.points_for / j.jam_count).toFixed(2) : 0),
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
+        borderWidth: 1
+      },
+      {
+        label: 'Avg Points Against',
+        data: jammerStats.map((j) => j.jam_count > 0 ? +(j.points_against / j.jam_count).toFixed(2) : 0),
+        backgroundColor: colors.info,
+        borderColor: colors.info,
+        borderWidth: 1
+      },
+      {
+        label: 'Avg Score Diff',
+        data: jammerStats.map((j) => j.jam_count > 0 ? +((j.points_for - j.points_against) / j.jam_count).toFixed(2) : 0),
+        backgroundColor: colors.warning,
+        borderColor: colors.warning,
+        borderWidth: 1
+      },
+    ]
+  }
+
+  const jammerAvgPointsChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top' as const
+      },
+      title: {
+        display: true,
+        text: 'Average Points Per Jam',
+        font: {
+          size: 18
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: { dataset: { label?: string }; raw: unknown; dataIndex: number }) => {
+            const jamCount = jammerStats[context.dataIndex]?.jam_count ?? 0
+            return `${context.dataset.label}: ${context.raw} (${jamCount} jams played)`
+          }
         }
       }
     },
@@ -661,7 +735,7 @@ function GameStats() {
         borderWidth: 1
       },
       {
-        label: 'Total Score',
+        label: 'Score Diff',
         data: lineStats.map((l) => l.points_for - l.points_against),
         backgroundColor: colors.warning,
         borderColor: colors.warning,
@@ -683,6 +757,80 @@ function GameStats() {
         text: 'Points For and Against',
         font: {
           size: 18
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: { dataset: { label?: string }; raw: unknown; dataIndex: number }) => {
+            const jamCount = lineStats[context.dataIndex]?.jam_count ?? 0
+            return `${context.dataset.label}: ${context.raw} (${jamCount} jams played)`
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: (context: { tick: { value: number } }) => {
+            if (context.tick.value === 0) {
+              return 'rgba(0, 0, 0, 0.3)'
+            }
+            return 'rgba(0, 0, 0, 0.1)'
+          }
+        }
+      }
+    }
+  }
+
+  const blockerAvgPointsChartData = {
+    labels: lineStats.map((l) => l.line_name),
+    datasets: [
+      {
+        label: 'Avg Points For',
+        data: lineStats.map((l) => l.jam_count > 0 ? +(l.points_for / l.jam_count).toFixed(2) : 0),
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
+        borderWidth: 1
+      },
+      {
+        label: 'Avg Points Against',
+        data: lineStats.map((l) => l.jam_count > 0 ? +(l.points_against / l.jam_count).toFixed(2) : 0),
+        backgroundColor: colors.info,
+        borderColor: colors.info,
+        borderWidth: 1
+      },
+      {
+        label: 'Avg Score Diff',
+        data: lineStats.map((l) => l.jam_count > 0 ? +((l.points_for - l.points_against) / l.jam_count).toFixed(2) : 0),
+        backgroundColor: colors.warning,
+        borderColor: colors.warning,
+        borderWidth: 1
+      },
+    ]
+  }
+
+  const blockerAvgPointsChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top' as const
+      },
+      title: {
+        display: true,
+        text: 'Average Points Per Jam',
+        font: {
+          size: 18
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: { dataset: { label?: string }; raw: unknown; dataIndex: number }) => {
+            const jamCount = lineStats[context.dataIndex]?.jam_count ?? 0
+            return `${context.dataset.label}: ${context.raw} (${jamCount} jams played)`
+          }
         }
       }
     },
@@ -835,6 +983,9 @@ function GameStats() {
                   <div style={{ height: '400px' }} className="mb-4">
                     <Bar data={jammerPointsChartData} options={jammerPointsChartOptions} />
                   </div>
+                  <div style={{ height: '400px' }} className="mb-4">
+                    <Bar data={jammerAvgPointsChartData} options={jammerAvgPointsChartOptions} />
+                  </div>
                 </>
               ) : (
                 <div className="alert alert-info">
@@ -857,6 +1008,9 @@ function GameStats() {
                   </div>
                   <div style={{ height: '400px' }} className="mb-4">
                     <Bar data={blockerPointsChartData} options={blockerPointsChartOptions} />
+                  </div>
+                  <div style={{ height: '400px' }} className="mb-4">
+                    <Bar data={blockerAvgPointsChartData} options={blockerAvgPointsChartOptions} />
                   </div>
                 </>
               ) : (
