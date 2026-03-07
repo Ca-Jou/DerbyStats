@@ -132,7 +132,7 @@ function CreateGameForm({ show, onClose, onSuccess, onError }: CreateGameFormPro
               <div className="modal-body">
                 <div className="mb-3">
                   <label htmlFor="home_team_id" className="form-label">
-                    Home Team
+                    Our Team
                   </label>
                   <select
                     className="form-select"
@@ -155,7 +155,7 @@ function CreateGameForm({ show, onClose, onSuccess, onError }: CreateGameFormPro
                 {homeTeam && (
                   <div className="mb-3">
                     <label htmlFor="home_team_color" className="form-label">
-                      Home Team Color
+                      Our Team Color
                     </label>
                     <select
                       className="form-select"
@@ -178,7 +178,7 @@ function CreateGameForm({ show, onClose, onSuccess, onError }: CreateGameFormPro
                 )}
                 <div className="mb-3">
                   <label htmlFor="visiting_team_id" className="form-label">
-                    Visiting Team
+                    Opposing Team
                   </label>
                   <select
                     className="form-select"
@@ -201,7 +201,7 @@ function CreateGameForm({ show, onClose, onSuccess, onError }: CreateGameFormPro
                 {visitingTeam && (
                   <div className="mb-3">
                     <label htmlFor="visiting_team_color" className="form-label">
-                      Visiting Team Color
+                      Opposing Team Color
                     </label>
                     <select
                       className="form-select"

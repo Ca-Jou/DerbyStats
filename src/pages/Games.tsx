@@ -134,8 +134,8 @@ function Games() {
               <thead className="table-dark">
                 <tr>
                   <th>Date</th>
-                  <th>Home Team</th>
-                  <th>Visiting Team</th>
+                  <th>Our Team</th>
+                  <th>Opposing Team</th>
                   <th>Location</th>
                   <th></th>
                 </tr>

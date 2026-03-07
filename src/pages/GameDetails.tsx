@@ -250,7 +250,7 @@ function GameDetails() {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title text-center mb-3">Home Team</h5>
+                  <h5 className="card-title text-center mb-3">Our Team</h5>
                   <div className="text-center mb-3 d-flex align-items-center justify-content-center gap-2">
                     {game.home_team_color && (
                       <div
@@ -325,7 +325,7 @@ function GameDetails() {
                           onClick={() => {
                             setRosterToDelete({
                               id: homeRoster.id,
-                              teamName: game.home_team?.name || 'Home Team'
+                              teamName: game.home_team?.name || 'Our Team'
                             })
                             setShowDeleteRosterConfirm(true)
                           }}
@@ -342,7 +342,7 @@ function GameDetails() {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title text-center mb-3">Visiting Team</h5>
+                  <h5 className="card-title text-center mb-3">Opposing Team</h5>
                   <div className="text-center mb-3 d-flex align-items-center justify-content-center gap-2">
                     {game.visiting_team_color && (
                       <div
@@ -416,7 +416,7 @@ function GameDetails() {
                           onClick={() => {
                             setRosterToDelete({
                               id: visitingRoster.id,
-                              teamName: game.visiting_team?.name || 'Visiting Team'
+                              teamName: game.visiting_team?.name || 'Opposing Team'
                             })
                             setShowDeleteRosterConfirm(true)
                           }}
@@ -521,7 +521,7 @@ function GameDetails() {
         show={showCreateHomeRoster}
         gameId={game.id}
         teamId={game.home_team_id}
-        teamName={game.home_team?.name || 'Home Team'}
+        teamName={game.home_team?.name || 'Our Team'}
         onClose={() => setShowCreateHomeRoster(false)}
         onSuccess={(newRoster) => {
           setHomeRoster(newRoster)
@@ -538,7 +538,7 @@ function GameDetails() {
           show={showEditHomeRoster}
           roster={homeRoster}
           teamId={game.home_team_id}
-          teamName={game.home_team?.name || 'Home Team'}
+          teamName={game.home_team?.name || 'Our Team'}
           onClose={() => setShowEditHomeRoster(false)}
           onSuccess={(updatedRoster) => {
             setHomeRoster(updatedRoster)
@@ -555,7 +555,7 @@ function GameDetails() {
         show={showCreateVisitingRoster}
         gameId={game.id}
         teamId={game.visiting_team_id}
-        teamName={game.visiting_team?.name || 'Visiting Team'}
+        teamName={game.visiting_team?.name || 'Opposing Team'}
         onClose={() => setShowCreateVisitingRoster(false)}
         onSuccess={(newRoster) => {
           setVisitingRoster(newRoster)
@@ -572,7 +572,7 @@ function GameDetails() {
           show={showEditVisitingRoster}
           roster={visitingRoster}
           teamId={game.visiting_team_id}
-          teamName={game.visiting_team?.name || 'Visiting Team'}
+          teamName={game.visiting_team?.name || 'Opposing Team'}
           onClose={() => setShowEditVisitingRoster(false)}
           onSuccess={(updatedRoster) => {
             setVisitingRoster(updatedRoster)

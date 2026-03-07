@@ -627,14 +627,14 @@ function GameStats() {
     labels: scoreEvolution.labels,
     datasets: [
       {
-        label: game?.home_team?.name || 'Home Team',
+        label: game?.home_team?.name || 'Our Team',
         data: scoreEvolution.homeScores,
         borderColor: selectedView === 'home' ? colors.primary : colors.info,
         backgroundColor: selectedView === 'home' ? colors.primary : colors.info,
         tension: 0.1
       },
       {
-        label: game?.visiting_team?.name || 'Visiting Team',
+        label: game?.visiting_team?.name || 'Opposing Team',
         data: scoreEvolution.visitingScores,
         borderColor: selectedView === 'visiting' ? colors.primary : colors.info,
         backgroundColor: selectedView === 'visiting' ? colors.primary : colors.info,
@@ -1220,14 +1220,14 @@ function GameStats() {
                     className={`btn ${selectedView === 'home' ? 'btn-primary' : 'btn-outline-primary'}`}
                     onClick={() => setSelectedView('home')}
                   >
-                    {game.home_team?.name || 'Home Team'}
+                    {game.home_team?.name || 'Our Team'}
                   </button>
                   <button
                     type="button"
                     className={`btn ${selectedView === 'visiting' ? 'btn-primary' : 'btn-outline-primary'}`}
                     onClick={() => setSelectedView('visiting')}
                   >
-                    {game.visiting_team?.name || 'Visiting Team'}
+                    {game.visiting_team?.name || 'Opposing Team'}
                   </button>
                   <button
                     type="button"

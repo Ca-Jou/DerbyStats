@@ -155,7 +155,7 @@ function EditGameForm({ show, game, onClose, onSuccess, onError }: EditGameFormP
               <div className="modal-body">
                 <div className="mb-3" ref={homeDropdownRef}>
                   <label htmlFor="edit-home_team_search" className="form-label">
-                    Home Team
+                    Our Team
                   </label>
                   <input
                     type="text"
@@ -205,7 +205,7 @@ function EditGameForm({ show, game, onClose, onSuccess, onError }: EditGameFormP
                 </div>
                 {homeTeam && (
                   <div className="mb-3">
-                    <label className="form-label d-block">Home Team Color</label>
+                    <label className="form-label d-block">Our Team Color</label>
                     {homeTeam.light_color && (
                       <div className="form-check mb-2">
                         <input
@@ -268,7 +268,7 @@ function EditGameForm({ show, game, onClose, onSuccess, onError }: EditGameFormP
                 )}
                 <div className="mb-3" ref={visitingDropdownRef}>
                   <label htmlFor="edit-visiting_team_search" className="form-label">
-                    Visiting Team
+                    Opposing Team
                   </label>
                   <input
                     type="text"
@@ -318,7 +318,7 @@ function EditGameForm({ show, game, onClose, onSuccess, onError }: EditGameFormP
                 </div>
                 {visitingTeam && (
                   <div className="mb-3">
-                    <label className="form-label d-block">Visiting Team Color</label>
+                    <label className="form-label d-block">Opposing Team Color</label>
                     {visitingTeam.light_color && (
                       <div className="form-check mb-2">
                         <input
