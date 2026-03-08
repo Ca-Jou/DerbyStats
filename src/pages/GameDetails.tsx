@@ -6,6 +6,7 @@ import DeleteButton from '../components/DeleteButton'
 import EditGameForm from '../components/EditGameForm'
 import CreateRosterForm from '../components/CreateRosterForm'
 import EditRosterForm from '../components/EditRosterForm'
+import UploadStatsForm from '../components/UploadStatsForm'
 
 function GameDetails() {
   const { id } = useParams<{ id: string }>()
@@ -26,6 +27,7 @@ function GameDetails() {
   const [showSwapConfirm, setShowSwapConfirm] = useState(false)
   const [showUnlockConfirm, setShowUnlockConfirm] = useState(false)
   const [swapping, setSwapping] = useState(false)
+  const [showUploadStats, setShowUploadStats] = useState(false)
 
   const handleSwapTeams = async () => {
     if (!game) return
@@ -259,6 +261,15 @@ function GameDetails() {
                     <i className="bi bi-clipboard-data me-2"></i>
                     Enter Stats
                   </button>
+                  {homeRoster && visitingRoster && !hasJams && (
+                    <button
+                      className="btn btn-outline-primary me-2"
+                      onClick={() => setShowUploadStats(true)}
+                    >
+                      <i className="bi bi-upload me-2"></i>
+                      Upload Stats
+                    </button>
+                  )}
                   <button
                     className="btn btn-outline-primary me-2"
                     onClick={() => setShowSwapConfirm(true)}
@@ -747,6 +758,24 @@ function GameDetails() {
           onError={(error) => {
             setError(error.message)
             setShowEditVisitingRoster(false)
+          }}
+        />
+      )}
+
+      {homeRoster && visitingRoster && (
+        <UploadStatsForm
+          show={showUploadStats}
+          game={game}
+          homeRoster={homeRoster}
+          visitingRoster={visitingRoster}
+          onClose={() => setShowUploadStats(false)}
+          onSuccess={() => {
+            setHasJams(true)
+            setShowUploadStats(false)
+          }}
+          onError={(error) => {
+            setError(error.message)
+            setShowUploadStats(false)
           }}
         />
       )}
