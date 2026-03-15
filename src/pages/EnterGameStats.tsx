@@ -1,23 +1,22 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Game, GameRoster, RosterJammer, Skater } from '../types/Skater'
-import JamEntryForm, { JamEntryFormRef } from '../components/JamEntryForm'
+import JamTable from '../components/JamTable'
 
 function EnterGameStats() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const jamFormRef = useRef<JamEntryFormRef>(null)
 
   const [game, setGame] = useState<Game | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const [period, setPeriod] = useState<1 | 2>(1)
-  const [jamNumber, setJamNumber] = useState(1)
-
   const [homeRoster, setHomeRoster] = useState<GameRoster | null>(null)
   const [visitingRoster, setVisitingRoster] = useState<GameRoster | null>(null)
+  const [homeTotal, setHomeTotal] = useState(0)
+  const [visitingTotal, setVisitingTotal] = useState(0)
 
   useEffect(() => {
     async function fetchGame() {
@@ -43,7 +42,6 @@ function EnterGameStats() {
 
         if (error) throw error
 
-        // Map the data to handle arrays returned by Supabase
         const mappedGame = {
           ...data,
           home_team: Array.isArray(data.home_team) ? data.home_team[0] : data.home_team,
@@ -128,52 +126,10 @@ function EnterGameStats() {
     fetchRosters()
   }, [game])
 
-  const handlePeriodChange = async () => {
-    if (!id) return
-
-    const newPeriod = period === 1 ? 2 : 1
-
-    try {
-      const { data, error } = await supabase
-        .from('jams')
-        .select('jam_number')
-        .eq('game_id', id)
-        .eq('period', newPeriod)
-        .order('jam_number', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      if (error) throw error
-
-      const nextJamNumber = data ? data.jam_number + 1 : 1
-      setPeriod(newPeriod as 1 | 2)
-      setJamNumber(nextJamNumber)
-    } catch (error) {
-      console.error('Error fetching max jam number:', error)
-      setPeriod(newPeriod as 1 | 2)
-      setJamNumber(1)
-    }
-  }
-
-  const handlePreviousJam = () => {
-    if (jamNumber > 1) {
-      setJamNumber(jamNumber - 1)
-    }
-  }
-
-  const handleNextJam = () => {
-    setJamNumber(jamNumber + 1)
-  }
-
-  const handleNavigateToGameDetails = async () => {
-    await jamFormRef.current?.saveJam()
-    navigate(`/games/${game?.id}`)
-  }
-
-  const handleNavigateToStats = async () => {
-    await jamFormRef.current?.saveJam()
-    navigate(`/games/${game?.id}/stats`)
-  }
+  const handleScoreChange = useCallback((home: number, visiting: number) => {
+    setHomeTotal(home)
+    setVisitingTotal(visiting)
+  }, [])
 
   if (loading) {
     return (
@@ -228,37 +184,79 @@ function EnterGameStats() {
     )
   }
 
+  const homeName = game.home_team?.name || 'Home'
+  const visitingName = game.visiting_team?.name || 'Visiting'
+
   return (
     <div className="container mt-4">
-      <div className="row">
-        <div className="col-12">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="mb-0">Enter Game Stats</h1>
-            <div className="d-flex align-items-center gap-2">
-              <button className="btn btn-outline-info" onClick={handleNavigateToGameDetails}>
-                <i className="bi bi-arrow-left me-2"></i>
-                Back to Game Details
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="mb-0">Enter Game Stats</h1>
+        <div className="d-flex align-items-center gap-2">
+          <button className="btn btn-outline-info" onClick={() => navigate(`/games/${game.id}`)}>
+            <i className="bi bi-arrow-left me-2"></i>
+            Back to Game Details
+          </button>
+          <button className="btn btn-primary" onClick={() => navigate(`/games/${game.id}/stats`)}>
+            <i className="bi bi-graph-up me-2"></i>
+            View Stats
+          </button>
+        </div>
+      </div>
+
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="mb-0">
+              {game.home_team_color && (
+                <span
+                  className="d-inline-block me-2"
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: game.home_team_color,
+                    border: '1px solid #dee2e6',
+                    borderRadius: '3px',
+                    verticalAlign: 'middle'
+                  }}
+                ></span>
+              )}
+              {homeName} {homeTotal} - {visitingTotal} {visitingName}
+              {game.visiting_team_color && (
+                <span
+                  className="d-inline-block ms-2"
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: game.visiting_team_color,
+                    border: '1px solid #dee2e6',
+                    borderRadius: '3px',
+                    verticalAlign: 'middle'
+                  }}
+                ></span>
+              )}
+            </h5>
+            <div className="btn-group">
+              <button
+                className={`btn ${period === 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setPeriod(1)}
+              >
+                Period 1
               </button>
               <button
-                className="btn btn-primary"
-                onClick={handleNavigateToStats}
+                className={`btn ${period === 2 ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setPeriod(2)}
               >
-                <i className="bi bi-graph-up me-2"></i>
-                View Stats
+                Period 2
               </button>
             </div>
           </div>
 
-          <JamEntryForm
-            ref={jamFormRef}
+          <JamTable
             game={game}
             period={period}
-            jamNumber={jamNumber}
             homeRoster={homeRoster}
             visitingRoster={visitingRoster}
-            onPeriodChange={handlePeriodChange}
-            onPreviousJam={handlePreviousJam}
-            onNextJam={handleNextJam}
+            onScoreChange={handleScoreChange}
           />
         </div>
       </div>
