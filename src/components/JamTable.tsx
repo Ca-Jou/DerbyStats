@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { Game, GameRoster, RosterJammer } from '../types/Skater'
+import { Game, GameRoster, RosterJammer, Skater } from '../types/Skater'
 
 interface JamRow {
   id?: string
@@ -96,6 +96,10 @@ export default function JamTable({ game, period, homeRoster, visitingRoster, onS
   const [creatingJammer, setCreatingJammer] = useState(false)
   const [localHomeJammers, setLocalHomeJammers] = useState<RosterJammer[]>(homeRoster?.roster_jammers || [])
   const [localVisitingJammers, setLocalVisitingJammers] = useState<RosterJammer[]>(visitingRoster?.roster_jammers || [])
+  const [teamSkatersForModal, setTeamSkatersForModal] = useState<Skater[]>([])
+  const [jammerSearchQuery, setJammerSearchQuery] = useState('')
+  const [loadingTeamSkaters, setLoadingTeamSkaters] = useState(false)
+  const [addingExistingSkater, setAddingExistingSkater] = useState<string | null>(null)
 
   // Debounce timers per jam index
   const saveTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({})
@@ -393,11 +397,45 @@ export default function JamTable({ game, period, homeRoster, visitingRoster, onS
   }
 
   // New jammer modal handlers
+  const fetchTeamSkatersNotInRoster = async (team: 'home' | 'visiting') => {
+    const teamId = team === 'home' ? game.home_team_id : game.visiting_team_id
+    const rosterJammers = team === 'home' ? localHomeJammers : localVisitingJammers
+    const rosterSkaterIds = new Set(rosterJammers.map(j => j.skater_id))
+
+    setLoadingTeamSkaters(true)
+    try {
+      const { data, error } = await supabase
+        .from('teams_skaters')
+        .select(`
+          skater_id,
+          skater:skaters(id, number, name)
+        `)
+        .eq('team_id', teamId)
+
+      if (error) throw error
+
+      const skaters = (data || [])
+        .map((ts: { skater_id: string; skater: Skater | Skater[] }) =>
+          Array.isArray(ts.skater) ? ts.skater[0] : ts.skater
+        )
+        .filter((s: Skater) => !rosterSkaterIds.has(s.id))
+
+      setTeamSkatersForModal(skaters)
+    } catch (error) {
+      console.error('Error fetching team skaters:', error)
+      setTeamSkatersForModal([])
+    } finally {
+      setLoadingTeamSkaters(false)
+    }
+  }
+
   const openNewJammerModal = (team: 'home' | 'visiting') => {
     setNewJammerTeam(team)
     setNewJammerNumber('')
     setNewJammerName('')
+    setJammerSearchQuery('')
     setShowNewJammerModal(true)
+    fetchTeamSkatersNotInRoster(team)
   }
 
   const closeNewJammerModal = () => {
@@ -405,6 +443,49 @@ export default function JamTable({ game, period, homeRoster, visitingRoster, onS
     setNewJammerTeam(null)
     setNewJammerNumber('')
     setNewJammerName('')
+    setJammerSearchQuery('')
+    setTeamSkatersForModal([])
+  }
+
+  const addExistingSkaterToRoster = async (skater: Skater) => {
+    if (!newJammerTeam) return
+
+    const roster = newJammerTeam === 'home' ? homeRoster : visitingRoster
+    if (!roster) {
+      alert('Roster not found')
+      return
+    }
+
+    try {
+      setAddingExistingSkater(skater.id)
+
+      const { data: rosterJammer, error } = await supabase
+        .from('roster_jammers')
+        .insert({ game_roster_id: roster.id, skater_id: skater.id })
+        .select()
+        .single()
+      if (error) throw error
+
+      const newJammerData: RosterJammer = {
+        id: rosterJammer.id,
+        game_roster_id: roster.id,
+        skater_id: skater.id,
+        skater: { id: skater.id, number: skater.number, name: skater.name },
+      }
+
+      if (newJammerTeam === 'home') {
+        setLocalHomeJammers((prev) => [...prev, newJammerData])
+      } else {
+        setLocalVisitingJammers((prev) => [...prev, newJammerData])
+      }
+
+      closeNewJammerModal()
+    } catch (error) {
+      console.error('Error adding skater to roster:', error)
+      alert('Failed to add skater to roster')
+    } finally {
+      setAddingExistingSkater(null)
+    }
   }
 
   const createNewJammer = async () => {
@@ -466,8 +547,9 @@ export default function JamTable({ game, period, homeRoster, visitingRoster, onS
 
   // Cleanup timers on unmount
   useEffect(() => {
+    const timers = saveTimers.current
     return () => {
-      Object.values(saveTimers.current).forEach(clearTimeout)
+      Object.values(timers).forEach(clearTimeout)
     }
   }, [])
 
@@ -755,18 +837,76 @@ export default function JamTable({ game, period, homeRoster, visitingRoster, onS
         </div>
       )}
 
-      {/* New Jammer Modal */}
+      {/* Add Jammer Modal */}
       {showNewJammerModal && (
         <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  Add New Jammer - {newJammerTeam === 'home' ? (game.home_team?.name || 'Home') : (game.visiting_team?.name || 'Visiting')}
+                  Add Jammer - {newJammerTeam === 'home' ? (game.home_team?.name || 'Home') : (game.visiting_team?.name || 'Visiting')}
                 </h5>
-                <button type="button" className="btn-close" onClick={closeNewJammerModal} disabled={creatingJammer}></button>
+                <button type="button" className="btn-close" onClick={closeNewJammerModal} disabled={creatingJammer || !!addingExistingSkater}></button>
               </div>
               <div className="modal-body">
+                {/* Search existing team skaters */}
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={jammerSearchQuery}
+                    onChange={(e) => setJammerSearchQuery(e.target.value)}
+                    placeholder="Search existing skaters..."
+                    disabled={creatingJammer || !!addingExistingSkater}
+                  />
+                </div>
+
+                {loadingTeamSkaters ? (
+                  <div className="text-center py-3">
+                    <div className="spinner-border spinner-border-sm" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {(() => {
+                      const query = jammerSearchQuery.toLowerCase()
+                      const filtered = teamSkatersForModal.filter(s =>
+                        !query || s.number.toLowerCase().includes(query) || s.name.toLowerCase().includes(query)
+                      )
+                      return filtered.length > 0 ? (
+                        <div style={{ maxHeight: '200px', overflowY: 'auto' }} className="border rounded mb-3">
+                          {filtered.map((skater) => (
+                            <div
+                              key={skater.id}
+                              className="d-flex justify-content-between align-items-center px-3 py-2 border-bottom"
+                            >
+                              <span>#{skater.number} {skater.name}</span>
+                              <button
+                                type="button"
+                                className="btn btn-outline-success btn-sm"
+                                onClick={() => addExistingSkaterToRoster(skater)}
+                                disabled={creatingJammer || addingExistingSkater === skater.id}
+                              >
+                                {addingExistingSkater === skater.id ? (
+                                  <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                ) : (
+                                  <><i className="bi bi-plus"></i> Add</>
+                                )}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : teamSkatersForModal.length > 0 ? (
+                        <p className="text-muted small mb-3">No matching skaters found.</p>
+                      ) : null
+                    })()}
+                  </>
+                )}
+
+                {/* Create new jammer section */}
+                <hr />
+                <h6>Create new jammer</h6>
                 <div className="mb-3">
                   <label className="form-label">Number</label>
                   <input
@@ -775,7 +915,7 @@ export default function JamTable({ game, period, homeRoster, visitingRoster, onS
                     value={newJammerNumber}
                     onChange={(e) => setNewJammerNumber(e.target.value)}
                     placeholder="Enter jammer number"
-                    disabled={creatingJammer}
+                    disabled={creatingJammer || !!addingExistingSkater}
                   />
                 </div>
                 <div className="mb-3">
@@ -786,15 +926,15 @@ export default function JamTable({ game, period, homeRoster, visitingRoster, onS
                     value={newJammerName}
                     onChange={(e) => setNewJammerName(e.target.value)}
                     placeholder="Enter jammer name"
-                    disabled={creatingJammer}
+                    disabled={creatingJammer || !!addingExistingSkater}
                   />
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={closeNewJammerModal} disabled={creatingJammer}>
+                <button type="button" className="btn btn-secondary" onClick={closeNewJammerModal} disabled={creatingJammer || !!addingExistingSkater}>
                   Cancel
                 </button>
-                <button type="button" className="btn btn-primary" onClick={createNewJammer} disabled={creatingJammer}>
+                <button type="button" className="btn btn-primary" onClick={createNewJammer} disabled={creatingJammer || !!addingExistingSkater}>
                   {creatingJammer ? (
                     <>
                       <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
